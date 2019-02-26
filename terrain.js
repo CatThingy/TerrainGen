@@ -31,20 +31,33 @@ function point(x, y, context) {
 }
 
 function show(context) {
-    for (let x = map.length; x --> 0;) {
-        for (let y = map[x].length; y --> 0;) {
-            let color = HSVtoRGB(map[x][y], 1, 1);
-            context.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
-            point(x, y, context);
+    if(document.getElementById("mode_hue").checked){
+        for (let x = map.length; x --> 0;) {
+            for (let y = map[x].length; y --> 0;) {
+                let color = HSVtoRGB(map[x][y]/detail, 1, 1);
+                context.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                point(x, y, context);
+            }
+        }
+    }
+    else{
+        for (let x = map.length; x --> 0;) {
+            for (let y = map[x].length; y --> 0;) {
+                let color = (1-(map[x][y]/(detail-1))) * 255;
+                context.fillStyle = `rgb(${color}, ${color}, ${color})`;
+                point(x, y, context);
+            }
         }
     }
 }
 function smooth(context) {
+    let tMap = map;
     for (let x = map.length; x --> 0;) {
         for (let y = map[x].length; y --> 0;) {
-            map[x][y] = getNeigbourAverage(map, x, y);
+            tMap[x][y] = getNeigbourAverage(map, x, y);
         }
     }
+    map=tMap;
     show(context);
 }
 function getNeigbourAverage(arr, x, y) {
@@ -71,16 +84,18 @@ function getNeigbourAverage(arr, x, y) {
     c = arr[left][above] + arr[left][y] + arr[left][below] +
         arr[x][above] + arr[x][below] +
         arr[right][above] + arr[right][y] + arr[right][below];
-    return c / 8;
+    return Math.round(c / 7);
 }
 
 //Initial canvas setup
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext('2d');
+let detail = 360;
 ctx.canvas.width = window.innerWidth * 0.975;
 ctx.canvas.height = window.innerHeight * 0.975;
 
 function init() {
+    detail = +document.getElementById("detail").value;    
     ctx.canvas.width = document.getElementById("width_slider").value;
     ctx.canvas.height = document.getElementById("height_slider").value;
 
@@ -88,7 +103,7 @@ function init() {
     for (let x = ctx.canvas.width; x --> 0;) {
         map[x] = new Array(ctx.canvas.height);
         for (let y = map[x].length; y --> 0;) {
-            map[x][y] = Math.random();
+            map[x][y] = Math.floor(Math.random() * detail);
         }
     }
     show(ctx);
@@ -104,13 +119,7 @@ function main() {
     //add canvas to the document
     document.getElementById("doc").appendChild(canvas);
 
-    //Generate map
-    for (let x = ctx.canvas.width; x --> 0;) {
-        map[x] = new Array(ctx.canvas.height);
-        for (let y = map[x].length; y --> 0;) {
-            map[x][y] = Math.random();
-        }
-    }
+    init();
     document.getElementById("height_slider").value = ctx.canvas.height;
     document.getElementById("width_slider").value = ctx.canvas.width;
     updateSliders();

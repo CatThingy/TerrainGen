@@ -7,16 +7,30 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Terrain Gen</title>
     <script src="terrain.js"></script>
+    <style>
+        .float {
+            float: left;
+        }
+    </style>
 </head>
 
 <body>
-    <button onclick="init()">Re-generate map</button>
-    <button onclick="smooth(ctx)">Smooth map</button>
-    <p id="width_display">Width:</p><input type="range" id="width_slider" min="1" max="2000"
-        oninput="updateSliders()"><br>
-    <p id="height_display">Height:</p><input type="range" id="height_slider" min="1" max="2000"
-        oninput="updateSliders()"><br>
-
+    <div class="float">
+        <button onclick="init()">Re-generate map</button>
+        <button onclick="smooth(ctx)">Smooth map</button>
+        <p id="width_display">Width:</p><input type="range" id="width_slider" min="1" max="2000"
+            oninput="updateSliders()"><br>
+        <p id="height_display">Height:</p><input type="range" id="height_slider" min="1" max="2000"
+            oninput="updateSliders()"><br>
+    </div>
+    <div class="float">
+        <input type="radio" name="colormode" id="mode_hue" checked="true">
+        <label for="mode_hue">Hue changes with value</label><br>
+        <input type="radio" name="colormode" id="mode_gray">
+        <label for="mode_gray">Lightness changes with value</label><br>
+        <label for="detail">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Level of detail</label>
+        <input type="number" min="2" max="360" value="360" id="detail" size="3" style="width:3em">
+    </div>
 </body>
 
 </html>
