@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" id="doc">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Terrain Gen</title>
+    <script src="terrain.js"></script>
+</head>
+
+<body>
+    <button onclick="init()">Re-generate map</button>
+    <button onclick="smooth(ctx)">Smooth map</button>
+    <p id="width_display">Width:</p><input type="range" id="width_slider" min="1" max="2000"
+        oninput="updateSliders()"><br>
+    <p id="height_display">Height:</p><input type="range" id="height_slider" min="1" max="2000"
+        oninput="updateSliders()"><br>
+
+</body>
+
+</html>
