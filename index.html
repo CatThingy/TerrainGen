@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" id="doc">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -28,8 +28,17 @@
         <label for="mode_hue">Hue changes with value</label><br>
         <input type="radio" name="colormode" id="mode_gray">
         <label for="mode_gray">Lightness changes with value</label><br>
-        <label for="detail">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Level of detail</label>
-        <input type="number" min="2" max="360" value="360" id="detail" size="3" style="width:3em">
+        <label for="detail">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Have </label>
+        <input type="number" min="2" max="360" value="360" id="detail" style="width:3em">
+        <label for="detail">different values </label>
+        <br>
+        <label for="neighbour_range">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Search for neighbours within</label>
+        <input type="number" min="1" max="4" value = "1" id="neighbour_range" style="width:2em">
+        <label for="neighbour_range"> squares when smoothing</label>
+
+    </div>
+    <div id="doc">
+
     </div>
 </body>
 

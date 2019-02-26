@@ -31,19 +31,19 @@ function point(x, y, context) {
 }
 
 function show(context) {
-    if(document.getElementById("mode_hue").checked){
+    if (document.getElementById("mode_hue").checked) {
         for (let x = map.length; x --> 0;) {
             for (let y = map[x].length; y --> 0;) {
-                let color = HSVtoRGB(map[x][y]/detail, 1, 1);
+                let color = HSVtoRGB(map[x][y] / detail, 1, 1);
                 context.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
                 point(x, y, context);
             }
         }
     }
-    else{
+    else {
         for (let x = map.length; x --> 0;) {
             for (let y = map[x].length; y --> 0;) {
-                let color = (1-(map[x][y]/(detail-1))) * 255;
+                let color = (1 - (map[x][y] / (detail - 1))) * 255;
                 context.fillStyle = `rgb(${color}, ${color}, ${color})`;
                 point(x, y, context);
             }
@@ -52,39 +52,71 @@ function show(context) {
 }
 function smooth(context) {
     let tMap = map;
+
     for (let x = map.length; x --> 0;) {
         for (let y = map[x].length; y --> 0;) {
-            tMap[x][y] = getNeigbourAverage(map, x, y);
+            tMap[x][y] = getNeigbourAverage(map, x, y, parseInt(document.getElementById("neighbour_range").value));
         }
     }
-    map=tMap;
+    map = tMap;
     show(context);
 }
-function getNeigbourAverage(arr, x, y) {
-    let c;
-    let left = x - 1;
-    let right = x + 1;
-    let above = y - 1;
-    let below = y + 1;
+function getNeigbourAverage(arr, x, y, r) {
+    let c = 0;
+    for (let nX = -r; nX <= r; nX++) {
+        for (let nY = -r; nY <= r; nY++) {
+            try{
+                var tX, tY;
+                tX = x + nX;
+                tY = y + nY;
 
-    if (above < 0) {
-        above = arr[x].length - 1;
-    }
-    else if (below >= arr[x].length) {
-        below = 0;
-    }
+                if (tX == x && tY == y) {
+                    continue;
+                }
 
-    if (left < 0) {
-        left = arr.length - 1;
-    }
-    else if (right >= arr.length) {
-        right = 0;
-    }
+                if (tY < 0) {
+                    tY += arr[x].length;
+                }
+                else if (tY >= arr[x].length) {
+                    tY -= arr[x].length;
+                }
 
-    c = arr[left][above] + arr[left][y] + arr[left][below] +
-        arr[x][above] + arr[x][below] +
-        arr[right][above] + arr[right][y] + arr[right][below];
-    return Math.round(c / 7);
+                if (tX < 0) {
+                    tX += arr.length;
+                }
+                else if (tX >= arr.length) {
+                    tX -= arr.length;
+                }
+
+                c += arr[tX][tY]
+            }
+            catch{
+                alert(`${tX}, ${tY}`);
+            }
+        }
+    }
+    // if (above < 0) {
+    //     above = arr[x].length - 1;
+    // }
+    // else if (below >= arr[x].length) {
+    //     below = 0;
+    // }
+
+    // if (left < 0) {
+    //     left = arr.length - 1;
+    // }
+    // else if (right >= arr.length) {
+    //     right = 0;
+    // }
+
+    // c = arr[left][above] + arr[left][y] + arr[left][below] +
+    //     arr[x][above] + arr[x][below] +
+    //     arr[right][above] + arr[right][y] + arr[right][below];
+    let div_factor = 0;
+    for(let i = r + 1; i --> 0;){
+        div_factor += i;
+    }
+    return Math.round(c / (div_factor * 7));
 }
 
 //Initial canvas setup
@@ -95,7 +127,7 @@ ctx.canvas.width = window.innerWidth * 0.975;
 ctx.canvas.height = window.innerHeight * 0.975;
 
 function init() {
-    detail = +document.getElementById("detail").value;    
+    detail = +document.getElementById("detail").value;
     ctx.canvas.width = document.getElementById("width_slider").value;
     ctx.canvas.height = document.getElementById("height_slider").value;
 
