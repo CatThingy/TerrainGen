@@ -28,7 +28,7 @@ function HSVtoRGB(h, s, v) {
 }
 
 function show(context) {
-    // let start = performance.now();
+    let start = performance.now();
     let imgData = context.createImageData(context.canvas.width, context.canvas.height);
     if (document.getElementById("mode_hue").checked) {
         for (let x = map.length; x --> 0;) {
@@ -56,21 +56,21 @@ function show(context) {
         }
     }
     context.putImageData(imgData, 0, 0);
-    // console.log(`Drawing time: ${performance.now()-start}ms`);
+    console.log(`Drawing time: ${performance.now()-start}ms`);
 }
 function smooth(context) {
     //Create copy of map so that the smoothing algo isn't
     //affected by the order in which pixels are smoothed
     let tMap = map;
     let r = parseInt(document.getElementById("neighbour_range").value);
-    // let start = performance.now();
+    let start = performance.now();
     for (let x = map.length; x --> 0;) {
         for (let y = map[x].length; y --> 0;) {
             //Sets pixel to average of neighbour pixels
             tMap[x][y] = getNeigbourAverage(map, x, y, r);
         }
     }
-    // console.log(`Calculation time: ${performance.now()-start}ms`);
+    console.log(`Calculation time: ${performance.now()-start}ms`);
     //Set map to the copy & redraw
     map = tMap;
     show(context);
