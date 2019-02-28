@@ -33,12 +33,11 @@ function show(context) {
         for (let x = map.length; x --> 0;) {
             for (let y = map[x].length; y --> 0;) {
                 let colour = HSVtoRGB(map[x][y] / detail, 1, 1);
+                //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour.g;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 2] = colour.b;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 3] = 255;
-                // context.fillStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
-                // point(x, y, context);
             }
 
         }
@@ -47,25 +46,28 @@ function show(context) {
         for (let x = map.length; x --> 0;) {
             for (let y = map[x].length; y --> 0;) {
                 let colour = (1 - (map[x][y] / (detail - 1))) * 255;
+                //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 2] = colour;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 3] = 255;
-                // context.fillStyle = `rgb(${colour}, ${colour}, ${colour})`;
-                // point(x, y, context);
             }
         }
     }
     context.putImageData(imgData, 0, 0);
 }
 function smooth(context) {
+    //Create copy of map so that the smoothing algo isn't
+    //affected by the order in which pixels are smoothed
     let tMap = map;
 
     for (let x = map.length; x --> 0;) {
         for (let y = map[x].length; y --> 0;) {
+            //Sets pixel to average of neighbour pixels
             tMap[x][y] = getNeigbourAverage(map, x, y, parseInt(document.getElementById("neighbour_range").value));
         }
     }
+    //Set map to the copy & redraw
     map = tMap;
     show(context);
 }
@@ -77,11 +79,13 @@ function getNeigbourAverage(arr, x, y, r) {
                 var tX, tY;
                 tX = x + nX;
                 tY = y + nY;
-
+                
+                //Don't count self as neighbour
                 if (tX == x && tY == y) {
                     continue;
                 }
 
+                //Wrap around if goes off screen
                 if (tY < 0) {
                     tY += arr[x].length;
                 }
@@ -99,32 +103,13 @@ function getNeigbourAverage(arr, x, y, r) {
                 c += arr[tX][tY]
             }
             catch{
-                alert(`${tX}, ${tY}`);
+                alert(`${tX}, ${tY}, ${e}`);
             }
         }
     }
-    // if (above < 0) {
-    //     above = arr[x].length - 1;
-    // }
-    // else if (below >= arr[x].length) {
-    //     below = 0;
-    // }
-
-    // if (left < 0) {
-    //     left = arr.length - 1;
-    // }
-    // else if (right >= arr.length) {
-    //     right = 0;
-    // }
-
-    // c = arr[left][above] + arr[left][y] + arr[left][below] +
-    //     arr[x][above] + arr[x][below] +
-    //     arr[right][above] + arr[right][y] + arr[right][below];
-    let div_factor = 0;
-    for (let i = r + 1; i --> 0;) {
-        div_factor += i * 8;
-    }
-    return Math.round(c / (div_factor));
+    //Divide by number of neighbours
+    let div_factor = (8 + (r * 8)) * r/2;
+    return Math.round(c / div_factor);
 }
 
 //Initial canvas setup
@@ -135,11 +120,14 @@ ctx.canvas.width = window.innerWidth * 0.975;
 ctx.canvas.height = window.innerHeight * 0.975;
 
 function init() {
+
+    //Set important values to inputted values
     detail = +document.getElementById("detail").value;
     ctx.canvas.width = document.getElementById("width_slider").value;
     ctx.canvas.height = document.getElementById("height_slider").value;
 
     map = [];
+    //Create new 2D array populated with random numbers
     for (let x = ctx.canvas.width; x --> 0;) {
         map[x] = new Array(ctx.canvas.height);
         for (let y = map[x].length; y --> 0;) {
@@ -156,12 +144,13 @@ function updateSliders() {
 
 function main() {
 
-    //add canvas to the document
+    //Add canvas to the document
     document.getElementById("doc").appendChild(canvas);
 
-    init();
+    //Set slider values to canvas size
     document.getElementById("height_slider").value = ctx.canvas.height;
     document.getElementById("width_slider").value = ctx.canvas.width;
+    init();
     updateSliders();
 }
 window.onload = function () {
