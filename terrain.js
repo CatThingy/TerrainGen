@@ -1,7 +1,7 @@
 'use-strict';
 
 let map = [];
-
+let test;
 function HSVtoRGB(h, s, v) {
     let r, g, b, i, f, p, q, t;
     if (arguments.length === 1) {
@@ -26,29 +26,37 @@ function HSVtoRGB(h, s, v) {
         b: Math.round(b * 255)
     };
 }
-function point(x, y, context) {
-    context.fillRect(x, y, 1, 1);
-}
 
 function show(context) {
+    let imgData = context.createImageData(context.canvas.width, context.canvas.height);
     if (document.getElementById("mode_hue").checked) {
         for (let x = map.length; x --> 0;) {
             for (let y = map[x].length; y --> 0;) {
-                let color = HSVtoRGB(map[x][y] / detail, 1, 1);
-                context.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
-                point(x, y, context);
+                let colour = HSVtoRGB(map[x][y] / detail, 1, 1);
+                imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
+                imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour.g;
+                imgData.data[(y * (imgData.width * 4) + (x * 4)) + 2] = colour.b;
+                imgData.data[(y * (imgData.width * 4) + (x * 4)) + 3] = 255;
+                // context.fillStyle = `rgb(${colour.r}, ${colour.g}, ${colour.b})`;
+                // point(x, y, context);
             }
+
         }
     }
     else {
         for (let x = map.length; x --> 0;) {
             for (let y = map[x].length; y --> 0;) {
-                let color = (1 - (map[x][y] / (detail - 1))) * 255;
-                context.fillStyle = `rgb(${color}, ${color}, ${color})`;
-                point(x, y, context);
+                let colour = (1 - (map[x][y] / (detail - 1))) * 255;
+                imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour;
+                imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour;
+                imgData.data[(y * (imgData.width * 4) + (x * 4)) + 2] = colour;
+                imgData.data[(y * (imgData.width * 4) + (x * 4)) + 3] = 255;
+                // context.fillStyle = `rgb(${colour}, ${colour}, ${colour})`;
+                // point(x, y, context);
             }
         }
     }
+    context.putImageData(imgData, 0, 0);
 }
 function smooth(context) {
     let tMap = map;
@@ -65,7 +73,7 @@ function getNeigbourAverage(arr, x, y, r) {
     let c = 0;
     for (let nX = -r; nX <= r; nX++) {
         for (let nY = -r; nY <= r; nY++) {
-            try{
+            try {
                 var tX, tY;
                 tX = x + nX;
                 tY = y + nY;
@@ -113,10 +121,10 @@ function getNeigbourAverage(arr, x, y, r) {
     //     arr[x][above] + arr[x][below] +
     //     arr[right][above] + arr[right][y] + arr[right][below];
     let div_factor = 0;
-    for(let i = r + 1; i --> 0;){
-        div_factor += i;
+    for (let i = r + 1; i --> 0;) {
+        div_factor += i * 8;
     }
-    return Math.round(c / (div_factor * 7));
+    return Math.round(c / (div_factor));
 }
 
 //Initial canvas setup
@@ -155,7 +163,6 @@ function main() {
     document.getElementById("height_slider").value = ctx.canvas.height;
     document.getElementById("width_slider").value = ctx.canvas.width;
     updateSliders();
-    show(ctx);
 }
 window.onload = function () {
     main();
