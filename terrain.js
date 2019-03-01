@@ -31,8 +31,8 @@ function show(context) {
     let start = performance.now();
     let imgData = context.createImageData(context.canvas.width, context.canvas.height);
     if (document.getElementById("mode_hue").checked) {
-        for (let x = map.length; x --> 0;) {
-            for (let y = map[x].length; y --> 0;) {
+        for (let x = map.length; x -->  0;) {
+            for (let y = map[x].length; y -->  0;) {
                 let colour = HSVtoRGB(map[x][y] / detail, 1, 1);
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
@@ -44,8 +44,8 @@ function show(context) {
         }
     }
     else {
-        for (let x = map.length; x --> 0;) {
-            for (let y = map[x].length; y --> 0;) {
+        for (let x = map.length; x -->  0;) {
+            for (let y = map[x].length; y -->  0;) {
                 let colour = (1 - (map[x][y] / (detail - 1))) * 255;
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour;
@@ -56,65 +56,134 @@ function show(context) {
         }
     }
     context.putImageData(imgData, 0, 0);
-    console.log(`Drawing time: ${performance.now()-start}ms`);
+    console.log(`Drawing time: ${performance.now() - start}ms`);
 }
 function smooth(context) {
     //Create copy of map so that the smoothing algo isn't
     //affected by the order in which pixels are smoothed
+    let w = document.getElementById("flat").checked?1:document.getElementById("sphere").checked?2:3;
     let tMap = map;
     let r = parseInt(document.getElementById("neighbour_range").value);
     let start = performance.now();
-    for (let x = map.length; x --> 0;) {
-        for (let y = map[x].length; y --> 0;) {
+    for (let x = map.length; x -->  0;) {
+        for (let y = map[x].length; y -->  0;) {
             //Sets pixel to average of neighbour pixels
-            tMap[x][y] = getNeigbourAverage(map, x, y, r);
+            tMap[x][y] = getNeigbourAverage(map, x, y, r, w);
         }
     }
-    console.log(`Calculation time: ${performance.now()-start}ms`);
+    console.log(`Calculation time: ${performance.now() - start}ms`);
     //Set map to the copy & redraw
     map = tMap;
     show(context);
 
 }
-function getNeigbourAverage(arr, x, y, r) {
+function getNeigbourAverage(arr, x, y, r, worldMode) {
     let c = 0;
-    for (let nX = -r; nX <= r; nX++) {
-        for (let nY = -r; nY <= r; nY++) {
-            try {
-                var tX, tY;
-                tX = x + nX;
-                tY = y + nY;
-                
-                //Don't count self as neighbour
-                if (tX === x && tY === y) {
-                    continue;
-                }
+    switch (worldMode) {
+        //Flat
+        case 1:
+            let n = ((8 + (r * 8)) * r / 2) + 1;
+            for (let nX = -r; nX <= r; nX++) {
+                for (let nY = -r; nY <= r; nY++) {
+                    try {
+                        var tX, tY;
+                        tX = x + nX;
+                        tY = y + nY;
 
-                //Wrap around if goes off screen
-                if (tY < 0) {
-                    tY += arr[x].length;
+                        //Don't count self or off-map tiles as neighbours
+                        if ((tX === x && tY === y) || (tY < 0) || (tY >= arr[x].length) || (tX < 0) || (tX >= arr.length)) {
+                            n--;
+                            continue;
+                        }
+                        c += arr[tX][tY];
+                    }
+                    catch (e) {
+                        alert(`${tX}, ${tY}, ${e}`);
+                    }
                 }
-                else if (tY >= arr[x].length) {
-                    tY -= arr[x].length;
-                }
-
-                if (tX < 0) {
-                    tX += arr.length;
-                }
-                else if (tX >= arr.length) {
-                    tX -= arr.length;
-                }
-
-                c += arr[tX][tY];
             }
-            catch{
-                alert(`${tX}, ${tY}, ${e}`);
+            //Divide by number of neighbours
+            return Math.round(c / n);
+        //Sphere
+        case 2:
+            for (let nX = -r; nX <= r; nX++) {
+                for (let nY = -r; nY <= r; nY++) {
+                    try {
+                        var tX, tY;
+                        tX = x + nX;
+                        tY = y + nY;
+
+                        //Don't count self as neighbour
+                        if (tX === x && tY === y) {
+                            continue;
+                        }
+
+                        //Wrap around if goes off screen
+                        if (tY < 0) {
+                            tX -= Math.floor(arr.length/2);
+                            tY += arr[x].length;
+                        }
+                        else if (tY >= arr[x].length) {
+                            tX -= Math.floor(arr.length/2);
+
+                            tY -= arr[x].length;
+                        }
+
+                        if (tX < 0) {
+                            tX += arr.length;
+                        }
+                        else if (tX >= arr.length) {
+                            tX -= arr.length;
+                        }
+
+                        c += arr[tX][tY];
+                    }
+                    catch (e) {
+                        alert(`${tX}, ${tY}, ${e}`);
+                    }
+                }
             }
-        }
+            //Divide by number of neighbours
+            return Math.round(c / ((8 + (r * 8)) * r / 2));
+        //Torus
+        case 3:
+            for (let nX = -r; nX <= r; nX++) {
+                for (let nY = -r; nY <= r; nY++) {
+                    try {
+                        var tX, tY;
+                        tX = x + nX;
+                        tY = y + nY;
+
+                        //Don't count self as neighbour
+                        if (tX === x && tY === y) {
+                            continue;
+                        }
+
+                        //Wrap around if goes off screen
+                        if (tY < 0) {
+                            tY += arr[x].length;
+                        }
+                        else if (tY >= arr[x].length) {
+                            tY -= arr[x].length;
+                        }
+
+                        if (tX < 0) {
+                            tX += arr.length;
+                        }
+                        else if (tX >= arr.length) {
+                            tX -= arr.length;
+                        }
+
+                        c += arr[tX][tY];
+                    }
+                    catch (e) {
+                        alert(`${tX}, ${tY}, ${e}`);
+                    }
+                }
+            }
+            //Divide by number of neighbours
+            return Math.round(c / ((8 + (r * 8)) * r / 2));
     }
-    //Divide by number of neighbours
-    let div_factor = (8 + (r * 8)) * r/2;
-    return Math.round(c / div_factor);
 }
 
 //Initial canvas setup
@@ -126,16 +195,16 @@ ctx.canvas.height = window.innerHeight * 0.975;
 
 function init() {
 
-    //Set important values to inputted values
+    //Set important values to input values
     detail = +document.getElementById("detail").value;
     ctx.canvas.width = document.getElementById("width_slider").value;
     ctx.canvas.height = document.getElementById("height_slider").value;
 
     map = [];
     //Create new 2D array populated with random numbers
-    for (let x = ctx.canvas.width; x --> 0;) {
+    for (let x = ctx.canvas.width; x -->  0;) {
         map[x] = new Array(ctx.canvas.height);
-        for (let y = map[x].length; y --> 0;) {
+        for (let y = map[x].length; y -->  0;) {
             map[x][y] = Math.floor(Math.random() * detail);
         }
     }

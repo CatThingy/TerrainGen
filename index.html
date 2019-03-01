@@ -37,6 +37,14 @@
         <label for="neighbour_range"> squares when smoothing</label><br>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button onclick = "show(ctx)">Redraw canvas</button>
     </div>
+    <div class="float">
+        <input type="radio" name="edge_behaviour" id="flat" checked="true">
+        <label for="flat">Treat the world as flat when smoothing(no wrap around)</label><br>
+        <input type="radio" name="edge_behaviour" id="sphere">
+        <label for="sphere">Treat the world as spherical when smoothing(wraps E-W, NW-NE, SW-SE)</label><br>        
+        <input type="radio" name="edge_behaviour" id="torus">
+        <label for="torus">Treat the world as a torus when smoothing(wraps N-S, E-W)</label><br>
+    </div>
     <div id="doc">
 
     </div>
