@@ -193,8 +193,8 @@ let detail = 360;
 ctx.canvas.width = window.innerWidth * 0.975;
 ctx.canvas.height = window.innerHeight * 0.975;
 
-function init() {
 
+function init(type) {
     //Set important values to input values
     detail = +document.getElementById("detail").value;
     ctx.canvas.width = document.getElementById("width_slider").value;
@@ -209,6 +209,16 @@ function init() {
         }
     }
     show(ctx);
+}
+
+// type is a string that represents what map to generate
+function genMap(type, url=-1) {
+    switch (type) { 
+        case: "hsv-noise"
+            pass
+        case: "simplex-noise"
+            pass
+    }
 }
 
 function updateSliders() {
