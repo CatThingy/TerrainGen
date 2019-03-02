@@ -16,7 +16,8 @@
 
 <body>
     <div class="float">
-        <button onclick="init()">Re-generate map</button>
+        <button onclick="init(0)">Re-generate map</button>
+        <button onclick="init(1)">Re-generate simplex noise map</button>
         <button onclick="smooth(ctx)">Smooth map</button>
         <p id="width_display">Width:</p><input type="range" id="width_slider" min="1" max="2000"
             oninput="updateSliders()"><br>
