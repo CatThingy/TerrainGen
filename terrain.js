@@ -58,6 +58,7 @@ function show(context) {
     context.putImageData(imgData, 0, 0);
     console.log(`Drawing time: ${performance.now() - start}ms`);
 }
+
 function smooth(context) {
     //Create copy of map so that the smoothing algo isn't
     //affected by the order in which pixels are smoothed
@@ -77,6 +78,7 @@ function smooth(context) {
     show(context);
 
 }
+
 function getNeigbourAverage(arr, x, y, r, worldMode) {
     let c = 0;
     switch (worldMode) {
@@ -193,50 +195,78 @@ let detail = 360;
 ctx.canvas.width = window.innerWidth * 0.975;
 ctx.canvas.height = window.innerHeight * 0.975;
 
-
-function init(type) {
-    //Set important values to input values
-    detail = +document.getElementById("detail").value;
-    ctx.canvas.width = document.getElementById("width_slider").value;
-    ctx.canvas.height = document.getElementById("height_slider").value;
-
-    map = [];
-    //Create new 2D array populated with random numbers
-    for (let x = ctx.canvas.width; x -->  0;) {
-        map[x] = new Array(ctx.canvas.height);
-        for (let y = map[x].length; y -->  0;) {
-            map[x][y] = Math.floor(Math.random() * detail);
-        }
-    }
-    show(ctx);
+function init() {
+    // Generate map.
+    genMap('hsv-noise');
 }
+
+let kSimplex = 0.001;
 
 // type is a string that represents what map to generate
 function genMap(type, url=-1) {
-    switch (type) { 
-        case: "hsv-noise"
-            pass
-        case: "simplex-noise"
-            pass
+    setMapSize();
+
+    map = []; // Create new 2D array populated with 'random' numbers.
+
+    // Fill map.
+    switch (type) {
+        case "hsv-noise":
+            for (let x = ctx.canvas.width; x --> 0;) {
+                map[x] = new Array(ctx.canvas.height);
+                for (let y = map[x].length; y --> 0;) {
+                    map[x][y] = Math.floor(Math.random() * detail);
+                }
+            }
+            break;
+
+        case "simplex-noise":
+            var simplex = new SimplexNoise();  // This is computationally difficult, maybe give new-seed button?
+            for (let x = ctx.canvas.width; x --> 0;) {
+                map[x] = new Array(ctx.canvas.height);
+                for (let y = map[x].length; y --> 0;) {
+                    map[x][y] = Math.floor((simplex.noise2D(x*kSimplex, y*kSimplex)+1)/2 * detail);  // This assigns an hsv value based on simplex noise.
+                }
+            }
+            break;
     }
+
+    show(ctx); // Draw map.
+}
+
+// Set important values to input values
+function setMapSize() {
+    detail = +document.getElementById("detail").value;
+    ctx.canvas.width = document.getElementById("width_slider").value;
+    ctx.canvas.height = document.getElementById("height_slider").value;
 }
 
 function updateSliders() {
+    kSimplex = logScale( document.getElementById("kSimplex_slider").value );
+    document.getElementById("kSimplex_display").innerHTML = `Simplex Konstant: ${ kSimplex }`;
     document.getElementById("width_display").innerHTML = `Width: ${document.getElementById("width_slider").value}`;
     document.getElementById("height_display").innerHTML = `Height: ${document.getElementById("height_slider").value}`;
 }
 
-function main() {
+// Logartihmic scale (inverse exponential)
+function logScale(val) {
+    var minv = 0.000000001
+    var maxv = 1
 
-    //Add canvas to the document
+    return 1/(Math.exp(val)-1);
+}
+
+function main() {
+    // Add canvas to the document
     document.getElementById("doc").appendChild(canvas);
 
-    //Set slider values to canvas size
+    // Set slider values to canvas size
     document.getElementById("height_slider").value = ctx.canvas.height;
     document.getElementById("width_slider").value = ctx.canvas.width;
+
+    document.getElementById("kSimplex_display").value = kSimplex;
+
     init();
     updateSliders();
 }
-window.onload = function () {
-    main();
-}
+
+window.onload = function () { main(); }
