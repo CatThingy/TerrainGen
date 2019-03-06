@@ -31,8 +31,8 @@ function show(context) {
     let start = performance.now();
     let imgData = context.createImageData(context.canvas.width, context.canvas.height);
     if (document.getElementById("mode_hue").checked) {
-        for (let x = map.length; x -->  0;) {
-            for (let y = map[x].length; y -->  0;) {
+        for (let x = map.length; x --> 0;) {
+            for (let y = map[x].length; y --> 0;) {
                 let colour = HSVtoRGB(map[x][y] / detail, 1, 1);
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
@@ -44,8 +44,8 @@ function show(context) {
         }
     }
     else {
-        for (let x = map.length; x -->  0;) {
-            for (let y = map[x].length; y -->  0;) {
+        for (let x = map.length; x --> 0;) {
+            for (let y = map[x].length; y --> 0;) {
                 let colour = (1 - (map[x][y] / (detail - 1))) * 255;
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour;
@@ -62,12 +62,12 @@ function show(context) {
 function smooth(context) {
     //Create copy of map so that the smoothing algo isn't
     //affected by the order in which pixels are smoothed
-    let w = document.getElementById("flat").checked?1:document.getElementById("sphere").checked?2:3;
+    let w = document.getElementById("flat").checked ? 1 : document.getElementById("sphere").checked ? 2 : 3;
     let tMap = map;
     let r = parseInt(document.getElementById("neighbour_range").value);
     let start = performance.now();
-    for (let x = map.length; x -->  0;) {
-        for (let y = map[x].length; y -->  0;) {
+    for (let x = map.length; x --> 0;) {
+        for (let y = map[x].length; y --> 0;) {
             //Sets pixel to average of neighbour pixels
             tMap[x][y] = getNeigbourAverage(map, x, y, r, w);
         }
@@ -88,7 +88,7 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
             for (let nX = -r; nX <= r; nX++) {
                 for (let nY = -r; nY <= r; nY++) {
                     try {
-                        var tX, tY;
+                        let tX, tY;
                         tX = x + nX;
                         tY = y + nY;
 
@@ -111,7 +111,7 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
             for (let nX = -r; nX <= r; nX++) {
                 for (let nY = -r; nY <= r; nY++) {
                     try {
-                        var tX, tY;
+                        let tX, tY;
                         tX = x + nX;
                         tY = y + nY;
 
@@ -122,11 +122,11 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
 
                         //Wrap around if goes off screen
                         if (tY < 0) {
-                            tX -= Math.floor(arr.length/2);
+                            tX -= Math.floor(arr.length / 2);
                             tY += arr[x].length;
                         }
                         else if (tY >= arr[x].length) {
-                            tX -= Math.floor(arr.length/2);
+                            tX -= Math.floor(arr.length / 2);
 
                             tY -= arr[x].length;
                         }
@@ -152,7 +152,7 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
             for (let nX = -r; nX <= r; nX++) {
                 for (let nY = -r; nY <= r; nY++) {
                     try {
-                        var tX, tY;
+                        let tX, tY;
                         tX = x + nX;
                         tY = y + nY;
 
@@ -197,20 +197,20 @@ ctx.canvas.height = window.innerHeight * 0.975;
 
 function init() {
     // Generate map.
-    genMap('hsv-noise');
+    genMap('random-noise');
 }
 
 let kSimplex = 0.001;
 
 // type is a string that represents what map to generate
-function genMap(type, url=-1) {
+function genMap(type, url = -1) {
     setMapSize();
 
     map = []; // Create new 2D array populated with 'random' numbers.
 
     // Fill map.
     switch (type) {
-        case "hsv-noise":
+        case "random-noise":
             for (let x = ctx.canvas.width; x --> 0;) {
                 map[x] = new Array(ctx.canvas.height);
                 for (let y = map[x].length; y --> 0;) {
@@ -220,11 +220,11 @@ function genMap(type, url=-1) {
             break;
 
         case "simplex-noise":
-            var simplex = new SimplexNoise();  // This is computationally difficult, maybe give new-seed button?
+            let simplex = new SimplexNoise();  // This is computationally difficult, maybe give new-seed button?
             for (let x = ctx.canvas.width; x --> 0;) {
                 map[x] = new Array(ctx.canvas.height);
                 for (let y = map[x].length; y --> 0;) {
-                    map[x][y] = Math.floor((simplex.noise2D(x*kSimplex, y*kSimplex)+1)/2 * detail);  // This assigns an hsv value based on simplex noise.
+                    map[x][y] = Math.floor((simplex.noise2D(x * kSimplex, y * kSimplex) + 1) / 2 * detail);  // This assigns an hsv value based on simplex noise.
                 }
             }
             break;
@@ -241,18 +241,18 @@ function setMapSize() {
 }
 
 function updateSliders() {
-    kSimplex = logScale( document.getElementById("kSimplex_slider").value );
-    document.getElementById("kSimplex_display").innerHTML = `Simplex Konstant: ${ kSimplex }`;
+    kSimplex = logScale(document.getElementById("kSimplex_slider").value);
+    document.getElementById("kSimplex_display").innerHTML = `Simplex Konstant: ${kSimplex.toFixed(3)}`;
     document.getElementById("width_display").innerHTML = `Width: ${document.getElementById("width_slider").value}`;
     document.getElementById("height_display").innerHTML = `Height: ${document.getElementById("height_slider").value}`;
 }
 
 // Logartihmic scale (inverse exponential)
 function logScale(val) {
-    var minv = 0.000000001
-    var maxv = 1
-
-    return 1/(Math.exp(val)-1);
+    let minv = 0.000000001
+    let maxv = 1
+    //Clamp number between minv and maxv
+    return  Math.min(Math.max(1 / (Math.exp(val) - 1), minv), maxv);
 }
 
 function main() {
