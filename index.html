@@ -21,8 +21,8 @@
         <button onclick="genMap('simplex-noise')">Generate 'simplex-noise' map</button> <br>
         <button onclick="smooth(ctx)">Smooth map</button> <br>
 
-        <p id="kSimplex_display">Simplex Konstant:</p><input type="range" id="kSimplex_slider" min="0.0001" max="8" step="0.000001"
-            oninput="updateSliders()"><br>
+        <p id="kSimplex_display">Simplex Konstant:</p><input type="range" id="kSimplex_slider" min="0.0001" max="8"
+            step="0.000001" oninput="updateSliders()"><br>
         <p id="width_display">Width:</p><input type="range" id="width_slider" min="1" max="2000"
             oninput="updateSliders()"><br>
         <p id="height_display">Height:</p><input type="range" id="height_slider" min="1" max="2000"
@@ -39,16 +39,16 @@
         <label for="detail">different values </label>
         <br>
         <label for="neighbour_range">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Search for neighbours within</label>
-        <input type="number" min="1" max="9" value = "1" id="neighbour_range" style="width:2em">
+        <input type="number" min="1" max="9" value="1" id="neighbour_range" style="width:2em">
         <label for="neighbour_range"> squares when smoothing</label><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button onclick = "show(ctx)">Redraw canvas</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button onclick="show(ctx)">Redraw canvas</button>
     </div>
 
     <div class="float">
         <input type="radio" name="edge_behaviour" id="flat" checked="true">
         <label for="flat">Treat the world as flat when smoothing(no wrap around)</label><br>
         <input type="radio" name="edge_behaviour" id="sphere">
-        <label for="sphere">Treat the world as spherical when smoothing(wraps E-W, NW-NE, SW-SE)</label><br>
+        <label for="sphere">Treat the world as spherical when smoothing(wraps E-W, NW-N, SW-S)</label><br>
         <input type="radio" name="edge_behaviour" id="torus">
         <label for="torus">Treat the world as a torus when smoothing(wraps N-S, E-W)</label><br>
     </div>
