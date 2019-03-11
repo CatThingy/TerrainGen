@@ -60,10 +60,10 @@ function show(context) {
 }
 
 function smooth(context) {
+    let w = document.getElementById("flat").checked ? 1 : document.getElementById("sphere").checked ? 2 : 3;
     //Create copy of map so that the smoothing algo isn't
     //affected by the order in which pixels are smoothed
-    let w = document.getElementById("flat").checked ? 1 : document.getElementById("sphere").checked ? 2 : 3;
-    let tMap = map;
+    let tMap = map.slice(0);
     let r = parseInt(document.getElementById("neighbour_range").value);
     let start = performance.now();
     for (let x = map.length; x --> 0;) {
@@ -252,7 +252,7 @@ function logScale(val) {
     let minv = 0.000000001
     let maxv = 1
     //Clamp number between minv and maxv
-    return  Math.min(Math.max(1 / (Math.exp(val) - 1), minv), maxv);
+    return Math.min(Math.max(1 / (Math.exp(val) - 1), minv), maxv);
 }
 
 function main() {
