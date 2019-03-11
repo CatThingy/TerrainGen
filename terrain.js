@@ -27,13 +27,37 @@ function HSVtoRGB(h, s, v) {
     };
 }
 
+// This is a modified version of the HSVtoRGB function.
+// Improved to only use the hue variable.
+function HuetoRGB(h) {
+    let r, g, b, i, f, q, t;
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    q = (1 - f);
+    t = (1 - (1 - f));
+    switch (i % 6) {
+        case 0: r = 1, g = t, b = 0; break;
+        case 1: r = q, g = 1, b = 0; break;
+        case 2: r = p, g = 1, b = t; break;
+        case 3: r = 0, g = q, b = 1; break;
+        case 4: r = t, g = 0, b = 1; break;
+        case 5: r = 1, g = 0, b = q; break;
+    }
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
+}
+
 function show(context) {
     let start = performance.now();
     let imgData = context.createImageData(context.canvas.width, context.canvas.height);
     if (document.getElementById("mode_hue").checked) {
         for (let x = map.length; x --> 0;) {
             for (let y = map[x].length; y --> 0;) {
-                let colour = HSVtoRGB(map[x][y] / detail, 1, 1);
+                //let colour = HSVtoRGB(map[x][y] / detail, 1, 1);
+                let colour = HuetoRGB(map[x][y] / detail);
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour.g;
