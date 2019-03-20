@@ -19,6 +19,7 @@
     <div class="float">
         <button onclick="genMap('random-noise')">Generate 'random-noise' map</button> <br>
         <button onclick="genMap('simplex-noise')">Generate 'simplex-noise' map</button> <br>
+        <button onclick="genMap('web-img')">Generate 'simplex-noise' map</button> <br>
         <button onclick="smooth(ctx)">Smooth map</button> <br>
 
         <p id="kSimplex_display">Simplex Konstant:</p><input type="range" id="kSimplex_slider" min="0.0001" max="8"
@@ -27,6 +28,7 @@
             oninput="updateSliders()"><br>
         <p id="height_display">Height:</p><input type="range" id="height_slider" min="1" max="2000"
             oninput="updateSliders()"><br>
+        <input id="link_input" type="text" name="web_adress">
     </div>
 
     <div class="float">

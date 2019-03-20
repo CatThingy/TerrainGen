@@ -252,6 +252,16 @@ function genMap(type, url = -1) {
                 }
             }
             break;
+
+        case "web-img":
+            /*
+            var img=new Image();
+            img.onload=start;
+            img.src="myImage.png";
+            function start(){
+            ctx.drawImage(img,0,0);
+            */
+            break;
     }
 
     show(ctx); // Draw map.
@@ -275,7 +285,7 @@ function updateSliders() {
 function logScale(val) {
     let minv = 0.000000001
     let maxv = 1
-    //Clamp number between minv and maxv
+    // Clamp number between minv and maxv
     return Math.min(Math.max(1 / (Math.exp(val) - 1), minv), maxv);
 }
 
