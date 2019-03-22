@@ -1,0 +1,53 @@
+body {
+    margin: 0;
+}
+
+.float-left {
+    float: left;
+}
+
+.var-title {
+    margin-bottom: 0;
+}
+
+.table-std {
+    width: 100%;
+}
+
+.op-title {
+    margin: 12px;
+}
+
+.op-box {
+    padding: 6px;
+
+    display: inline-block;
+    text-align: left;
+
+    border: 2px solid #aad;
+    border-radius: 16px;
+}
+
+th, td {
+    border: 2px solid #ddf;
+    text-align: center;
+
+    background-color: #eef;
+    border-radius: 12px;
+
+    padding: 4px;
+}
+
+button {
+    margin: 4px;
+}
+
+#header {
+    padding: 12px;
+    width: calc(100% - 24px);
+}
+
+#doc {
+    width: 100%;
+    position: absolute;
+}

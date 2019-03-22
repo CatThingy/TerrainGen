@@ -5,65 +5,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
     <title>Terrain Gen</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="ui.js"></script>
+
     <script src="HueToRGB.js"></script>
     <script src="simplex-noise.js"></script>
     <script src="terrain.js"></script>
-
-    <style>
-        .float {
-            float: left;
-        }
-    </style>
-
 </head>
 
 <body>
-    <div class="float">
-        <button onclick="genMap('random-noise')">Generate 'random-noise' map</button> <br>
-        <button onclick="genMap('simplex-noise')">Generate 'simplex-noise' map</button> <br>
-        <button onclick="genMap('web-img')">Generate 'simplex-noise' map</button> <br>
-        <button onclick="smooth(ctx)">Smooth map</button> <br>
+    <div id="header">
+        <table class="table-std">
+            <tr>
+                <th>Noise Gen Buttons</th>
+                <th>Variables</th>
+                <th>Options</th>
+                <th>Misc</th>
+            </tr>
+            <tr>
+                <td>
+                    <button onclick="genMap('random-noise')">Generate 'random-noise' map</button> <br>
+                    <button onclick="genMap('simplex-noise')">Generate 'simplex-noise' map</button> <br>
+                    <button onclick="genMap('web-img')">Generate map from 'web-image'</button> <br>
+                    <button onclick="smooth(ctx)">Smooth map</button> <br>
+                </td>
+                <td>
+                    <p id="kSimplex_display" class="var-title">Simplex Konstant:</p>
+                    <input type="range" id="kSimplex_slider" min="0.0001" max="8" step="0.000001" oninput="updateSliders()"> <br>
 
-        <p id="kSimplex_display">Simplex Konstant:</p><input type="range" id="kSimplex_slider" min="0.0001" max="8"
-            step="0.000001" oninput="updateSliders()"><br>
-        <p id="width_display">Width:</p><input type="range" id="width_slider" min="1" max="2000"
-            oninput="updateSliders()"><br>
-        <p id="height_display">Height:</p><input type="range" id="height_slider" min="1" max="2000"
-            oninput="updateSliders()"><br>
-        <input id="link_input" type="text" name="web_adress">
-    </div>
+                    <p id="width_display" class="var-title">Width:</p>
+                    <input type="range" id="width_slider" min="1" max="2000" oninput="updateSliders()"> <br>
 
-    <div class="float">
-        <input type="radio" name="colormode" id="mode_hue" checked="true">
-        <label for="mode_hue">Hue changes with value</label><br>
-        <input type="radio" name="colormode" id="mode_gray">
-        <label for="mode_gray">Lightness changes with value</label><br>
-        <label for="detail">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Have </label>
-        <input type="number" min="2" max="360" value="360" id="detail" style="width:3em">
-        <label for="detail">different values </label>
-        <br>
-        <label for="neighbour_range">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Search for neighbours within</label>
-        <input type="number" min="1" max="9" value="1" id="neighbour_range" style="width:2em">
-        <label for="neighbour_range"> squares when smoothing</label><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button onclick="show(ctx)">Redraw canvas</button>
-    </div>
+                    <p id="height_display" class="var-title">Height:</p>
+                    <input type="range" id="height_slider" min="1" max="2000" oninput="updateSliders()"> <br>
 
-    <div class="float">
-        <input type="radio" name="edge_behaviour" id="flat" checked="true">
-        <label for="flat">Treat the world as flat when smoothing(no wrap around)</label><br>
-        <input type="radio" name="edge_behaviour" id="sphere">
-        <label for="sphere">Treat the world as spherical when smoothing(wraps E-W, NW-N, SW-S)</label><br>
-        <input type="radio" name="edge_behaviour" id="torus">
-        <label for="torus">Treat the world as a torus when smoothing(wraps N-S, E-W)</label><br>
-        <br>
-        <input type="checkbox" name="new_simplex_seed" id="reseed_simplex" checked="true">
-        <label for="reseed_simplex">Generate a different simplex noise map each time</label>
+                    <p class="var-title">Image Address:</p>
+                    <input id="link_input" type="text" name="web_adress">
+                </td>
+                <td>
+                    <h4 class="op-title"> -------- Colour Options -------- </h4>
+
+                    <div class="op-box">
+                        <input type="radio" name="colormode" id="mode_hue" checked="true">
+                        <label for="mode_hue">Hue changes with value</label>
+                        <br>
+                        <input type="radio" name="colormode" id="mode_gray">
+                        <label for="mode_gray">Lightness changes with value</label>
+                        <br>
+                        <label for="detail">Have </label>
+                        <input type="number" min="2" max="360" value="360" id="detail" style="width:3em">
+                        <label for="detail">different values (colours)</label>
+                    </div>
+
+                    <h4 class="op-title"> -------- World Options -------- </h4>
+
+                    <label for="neighbour_range">Search for neighbours within </label>
+                    <input type="number" min="1" max="9" value="1" id="neighbour_range" style="width:2em">
+                    <label for="neighbour_range"> square(s) when smoothing</label>
+                    <br>
+
+                    <div class="op-box">
+                        <input type="radio" name="edge_behaviour" id="flat" checked="true">
+                        <label for="flat">Treat the world as flat when smoothing(no wrap around)</label>
+                        <br>
+                        <input type="radio" name="edge_behaviour" id="sphere">
+                        <label for="sphere">Treat the world as spherical when smoothing(wraps E-W, NW-N, SW-S)</label>
+                        <br>
+                        <input type="radio" name="edge_behaviour" id="torus">
+                        <label for="torus">Treat the world as a torus when smoothing(wraps N-S, E-W)</label>
+                    </div>
+                </td>
+                <td>
+                    <input type="checkbox" name="new_simplex_seed" id="reseed_simplex" checked="true">
+                    <label for="reseed_simplex">Generate a different simplex noise map each time</label>
+                    <br><br>
+                    <button onclick="show(ctx)">Redraw canvas</button>
+                </td>
+            </tr>
+        </table>
+
     </div>
 
     <div id="doc">
 
     </div>
+
 </body>
 
 </html>

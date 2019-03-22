@@ -39,14 +39,15 @@ function show(context) {
 
 function smooth(context) {
     let w = document.getElementById("flat").checked ? 1 : document.getElementById("sphere").checked ? 2 : 3;
-    //Create copy of map so that the smoothing algo isn't
-    //affected by the order in which pixels are smoothed
+
+    // Create copy of map so that the smoothing alg isn't
+    // affected by the order in which pixels are smoothed.
     let tMap = map.map(arr => arr.slice());
     let r = parseInt(document.getElementById("neighbour_range").value);
     let start = performance.now();
     for (let x = map.length; x-- > 0;) {
         for (let y = map[x].length; y-- > 0;) {
-            //Sets pixel to average of neighbour pixels
+            // Sets pixel to average of neighbour pixels
             tMap[x][y] = getNeigbourAverage(map, x, y, r, w);
         }
     }
@@ -204,7 +205,8 @@ function genMap(type, url = -1) {
             for (let x = ctx.canvas.width; x-- > 0;) {
                 map[x] = new Array(ctx.canvas.height);
                 for (let y = map[x].length; y-- > 0;) {
-                    map[x][y] = Math.floor((simplex.noise2D(x * kSimplex, y * kSimplex) + 1) / 2 * detail);  // This assigns an hsv value based on simplex noise.
+                    // This assigns an hsv value based on simplex noise.
+                    map[x][y] = Math.floor((simplex.noise2D(x * kSimplex, y * kSimplex) + 1) / 2 * detail);
                 }
             }
             break;
