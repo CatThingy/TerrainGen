@@ -42,6 +42,13 @@ button {
     margin: 4px;
 }
 
+/*Colours*/
+red { color: #f22; }
+purple { color: #e2e; }
+green { color: #4c3; }
+blue { color: #26e; }
+orange { color: #f90; }
+
 #header {
     padding: 12px;
     margin: 0;

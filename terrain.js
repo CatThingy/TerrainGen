@@ -2,6 +2,10 @@
 
 // The lookup table for HueToRGB is hueRGB.
 
+let DEBUG = true;
+
+let g_kSimplex = 0.001;
+
 let map = [];
 let simplex;
 
@@ -18,7 +22,6 @@ function show(context) {
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 2] = colour.b;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 3] = 255;
             }
-
         }
     }
     else {
@@ -34,7 +37,7 @@ function show(context) {
         }
     }
     context.putImageData(imgData, 0, 0);
-    console.log(`Drawing time: ${performance.now() - start}ms`);
+    if (DEBUG) { console.log(`Drawing time: ${performance.now() - start}ms`); }
 }
 
 function smooth(context) {
@@ -51,7 +54,7 @@ function smooth(context) {
             tMap[x][y] = getNeigbourAverage(map, x, y, r, w);
         }
     }
-    console.log(`Calculation time: ${performance.now() - start}ms`);
+    if (DEBUG) { console.log(`Calculation time: ${performance.now() - start}ms`); }
     //Set map to the copy & redraw
     map = tMap;
     show(context);
@@ -85,6 +88,7 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
             }
             //Divide by number of neighbours
             return Math.round(c / n);
+
         //Sphere
         case 2:
             for (let nX = -r; nX <= r; nX++) {
@@ -125,6 +129,7 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
             }
             //Divide by number of neighbours
             return Math.round(c / ((8 + (r * 8)) * r / 2));
+
         //Torus
         case 3:
             for (let nX = -r; nX <= r; nX++) {
@@ -163,6 +168,7 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
             }
             //Divide by number of neighbours
             return Math.round(c / ((8 + (r * 8)) * r / 2));
+
     }
 }
 
@@ -174,11 +180,8 @@ ctx.canvas.width = window.innerWidth * 0.975;
 ctx.canvas.height = window.innerHeight * 0.975;
 
 function init() {
-    // Generate map.
-    genMap('random-noise');
+    genMap('random-noise'); // Generate the map.
 }
-
-let kSimplex = 0.001;
 
 // type is a string that represents what map to generate
 function genMap(type, url = -1) {
@@ -206,7 +209,7 @@ function genMap(type, url = -1) {
                 map[x] = new Array(ctx.canvas.height);
                 for (let y = map[x].length; y-- > 0;) {
                     // This assigns an hsv value based on simplex noise.
-                    map[x][y] = Math.floor((simplex.noise2D(x * kSimplex, y * kSimplex) + 1) / 2 * detail);
+                    map[x][y] = Math.floor((simplex.noise2D(x * g_kSimplex, y * g_kSimplex) + 1) / 2 * detail);
                 }
             }
             break;
@@ -221,7 +224,7 @@ function genMap(type, url = -1) {
             */
             break;
     }
-    console.log(`Generation time: ${performance.now() - start}ms`);
+    if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
     show(ctx); // Draw map.
 }
 
@@ -233,8 +236,8 @@ function setMapSize() {
 }
 
 function updateSliders() {
-    kSimplex = logScale(document.getElementById("kSimplex_slider").value);
-    document.getElementById("kSimplex_display").innerHTML = `Simplex Konstant: ${kSimplex.toFixed(3)}`;
+    g_kSimplex = logScale(document.getElementById("kSimplex_slider").value);
+    document.getElementById("kSimplex_display").innerHTML = `Simplex Konstant: ${g_kSimplex.toFixed(3)}`;
     document.getElementById("width_display").innerHTML = `Width: ${document.getElementById("width_slider").value}`;
     document.getElementById("height_display").innerHTML = `Height: ${document.getElementById("height_slider").value}`;
 }
@@ -255,7 +258,7 @@ function main() {
     document.getElementById("height_slider").value = ctx.canvas.height;
     document.getElementById("width_slider").value = ctx.canvas.width;
 
-    document.getElementById("kSimplex_display").value = kSimplex;
+    document.getElementById("kSimplex_display").value = g_kSimplex;
 
     init();
     updateSliders();

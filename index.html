@@ -28,10 +28,10 @@
             </tr>
             <tr>
                 <td>
-                    <button class="ui button" onclick="genMap('random-noise')">Generate 'random-noise' map</button> <br>
-                    <button class="ui button" onclick="genMap('simplex-noise')">Generate 'simplex-noise' map</button> <br>
-                    <button class="ui button" onclick="genMap('web-img')">Generate map from 'web-image'</button> <br>
-                    <button class="ui button" onclick="smooth(ctx)">Smooth map</button> <br>
+                    <button class="ui button" onclick="genMap('random-noise')">Generate <red>'random-noise'</red> map</button> <br>
+                    <button class="ui button" onclick="genMap('simplex-noise')">Generate <orange>'simplex-noise'</orange> map</button> <br>
+                    <button class="ui button" onclick="genMap('web-img')">Generate map from <purple>'web-image'</purple></button> <br>
+                    <button class="ui button" onclick="smooth(ctx)"><green>Smooth map</green></button> <br>
                 </td>
                 <td>
                     <p id="kSimplex_display" class="var-title">Simplex Konstant:</p>
@@ -44,28 +44,40 @@
                     <input type="range" id="height_slider" min="1" max="2000" oninput="updateSliders()"> <br>
 
                     <p class="var-title">Image Address:</p>
-                    <div class="ui input"> <input id="link_input" type="text" name="web_adress" placeholder="http://www.dopeopleusewww.com/img.jpg"></div>
+                    <div class="ui labeled input">
+                        <div class="ui label">
+                            http://
+                        </div>
+                        <input id="link_input" type="text" name="web_adress" placeholder="www.dopeopleusewww.com/img.jpg" style="width:16em">
+                    </div>
                 </td>
                 <td>
                     <h4 class="op-title"> -------- Colour Options -------- </h4>
 
-                    <div class="op-box">
-                        <input type="radio" name="colormode" id="mode_hue" checked="true">
-                        <label for="mode_hue">Hue changes with value</label>
+                    <div class="op-box ui form">
+                        <div class="ui slider checkbox">
+                            <input type="radio" name="colormode" id="mode_hue" checked="true">
+                            <label for="mode_hue">Hue changes with value</label>
+                        </div>
                         <br>
-                        <input type="radio" name="colormode" id="mode_gray">
-                        <label for="mode_gray">Lightness changes with value</label>
-                        <br>
-                        <label for="detail">Have </label>
-                        <input type="number" min="2" max="360" value="360" id="detail" style="width:3em">
-                        <label for="detail">different values (colours)</label>
+                        <div class="ui slider checkbox">
+                            <input type="radio" name="colormode" id="mode_gray">
+                            <label for="mode_gray">Lightness changes with value</label>
+                        </div>
+                    </div>
+                    <br>
+
+                    <div class="ui form">
+
                     </div>
 
                     <h4 class="op-title"> -------- World Options -------- </h4>
 
-                    <label for="neighbour_range">Search for neighbours within </label>
-                    <input type="number" min="1" max="9" value="1" id="neighbour_range" style="width:2em">
-                    <label for="neighbour_range"> square(s) when smoothing</label>
+                    <div class="ui form">
+                        <label for="neighbour_range">Search for neighbours within </label>
+                        <input type="number" min="1" max="9" value="1" id="neighbour_range" style="padding:0.3em;height:0.8em;width:2em;">
+                        <label for="neighbour_range"> square(s) when smoothing</label>
+                    </div>
                     <br>
 
                     <div class="op-box ui form">
@@ -91,7 +103,7 @@
                         <label for="reseed_simplex">Generate a different simplex noise map each time</label>
                     </div>
                     <br> <br>
-                    <button class="ui button" onclick="show(ctx)">Redraw canvas</button>
+                    <button class="ui button" onclick="show(ctx)"><blue>Redraw canvas</blue></button>
                 </td>
             </tr>
         </table>
