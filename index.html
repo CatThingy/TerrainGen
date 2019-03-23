@@ -43,10 +43,9 @@
                     <p id="height_display" class="var-title">Height:</p>
                     <input type="range" id="height_slider" min="1" max="2000" oninput="updateSliders()"> <br>
 
-                    <p class="var-title">Image Address:</p>
                     <div class="ui labeled input">
                         <div class="ui label">
-                            http://
+                            Img Address:
                         </div>
                         <input id="link_input" type="text" name="web_adress" placeholder="www.dopeopleusewww.com/img.jpg" style="width:16em">
                     </div>
@@ -68,7 +67,9 @@
                     <br>
 
                     <div class="ui form">
-
+                        <label for="detail">Have </label>
+                        <input type="number" min="2" max="360" value="360" id="detail" style="padding:0.3em;height:0.8em;width:3em;">
+                        <label for="detail">different values </label>
                     </div>
 
                     <h4 class="op-title"> -------- World Options -------- </h4>
@@ -107,12 +108,9 @@
                 </td>
             </tr>
         </table>
-
     </div>
 
-    <div id="doc">
-
-    </div>
+    <div id="doc"> </div>
 
 </body>
 

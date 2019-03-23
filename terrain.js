@@ -172,7 +172,7 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
     }
 }
 
-//Initial canvas setup
+// Initial canvas setup
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext('2d');
 let detail = 360;
@@ -183,8 +183,11 @@ function init() {
     genMap('random-noise'); // Generate the map.
 }
 
+let g_tmpImg = new Image();
+g_tmpImg.crossOrigin = "Anonymous";  // VERY IMPORTANT
+
 // type is a string that represents what map to generate
-function genMap(type, url = -1) {
+function genMap(type) {
     let start = performance.now();
     setMapSize();
 
@@ -205,6 +208,7 @@ function genMap(type, url = -1) {
             if (document.getElementById("reseed_simplex").checked) {
                 simplex = new SimplexNoise();
             }
+
             for (let x = ctx.canvas.width; x-- > 0;) {
                 map[x] = new Array(ctx.canvas.height);
                 for (let y = map[x].length; y-- > 0;) {
@@ -215,17 +219,55 @@ function genMap(type, url = -1) {
             break;
 
         case "web-img":
-            /*
-            var img=new Image();
-            img.onload=start;
-            img.src="myImage.png";
-            function start(){
-            ctx.drawImage(img,0,0);
-            */
+            //https://www.gravatar.com/avatar/fdeba2d2385f519fc86bbd4221a2cc53?s=32&d=identicon&r=PG&f=1
+
+            // When image is loaded the map matrix will be updated. (this function gets called)
+            g_tmpImg = new Image();
+            g_tmpImg.onload = function() {
+                console.log("strt");
+                // I have to go through all this hassle just to get the image data.
+                ctx.canvas.width = document.getElementById("width_slider").value = g_tmpImg.width;
+                ctx.canvas.height = document.getElementById("height_slider").value = g_tmpImg.height;
+                var tmpImageData;
+                try {
+                    ctx.drawImage(g_tmpImg, 0, 0);
+                    tmpImageData = ctx.getImageData(0, 0, g_tmpImg.width, g_tmpImg.height);
+                } catch(e) {
+                    /* security error, img on diff domain */
+                    alert("not very good at all -> /* security error, img on diff domain */");
+                    alert(e);
+                }
+
+                var step = 4;
+                for (let x = g_tmpImg.width; x > 0; x-=step) {
+                    map[x] = new Array(g_tmpImg.height);
+                    for (let y = map[x].length; y > 0; y-=step) {
+                        map[x/step][y/step] = RGBtoHue(
+                            tmpImageData.data[g_tmpImg.width*y+x],
+                            tmpImageData.data[g_tmpImg.width*y+x+1],
+                            tmpImageData.data[g_tmpImg.width*y+x+2]);
+                    }
+                }
+
+                if (DEBUG) { console.log("Canvas updated with web-img!"); }
+                show(ctx); // Draw map.
+            } // "http://cors.io/?" +
+            g_tmpImg.src = document.getElementById("link_input").value;  // Gets web address of image.  // TODO: make sure image exists first. case not: give warning.
+
+            alert(g_tmpImg.src);
             break;
     }
     if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
-    show(ctx); // Draw map.
+
+    switch (type) {
+        case "random-noise":
+        case "simplex-noise":
+            show(ctx); // Update map.
+            return;
+        case "web-img":
+            // Map gets updated in load function.
+            return;
+    }
 }
 
 // Set important values to input values
