@@ -221,10 +221,18 @@ function genMap(type) {
         case "web-img":
             //https://www.gravatar.com/avatar/fdeba2d2385f519fc86bbd4221a2cc53?s=32&d=identicon&r=PG&f=1
 
-            // When image is loaded the map matrix will be updated. (this function gets called)
             g_tmpImg = new Image();
+            /*
+            // Feature detection
+            //if ( !window.XMLHttpRequest ) { alert("Not good... -> you're using a shitty browser, aren't you?"); }
+        	//var xhr = new XMLHttpRequest();
+
+            // When image is loaded the map matrix will be updated. (this function gets called)
+        	//// When html is loaded the image data will be retieved (base64) and the map matrix will be updated. (this function gets called)
+        	//xhr.onload = function() {
             g_tmpImg.onload = function() {
                 console.log("strt");
+
                 // I have to go through all this hassle just to get the image data.
                 ctx.canvas.width = document.getElementById("width_slider").value = g_tmpImg.width;
                 ctx.canvas.height = document.getElementById("height_slider").value = g_tmpImg.height;
@@ -233,9 +241,9 @@ function genMap(type) {
                     ctx.drawImage(g_tmpImg, 0, 0);
                     tmpImageData = ctx.getImageData(0, 0, g_tmpImg.width, g_tmpImg.height);
                 } catch(e) {
-                    /* security error, img on diff domain */
-                    alert("not very good at all -> /* security error, img on diff domain */");
-                    alert(e);
+                    //security error, img on diff domain
+                    console.log("not very good at all -> // security error, img on diff domain //");
+                    console.log(e);
                 }
 
                 var step = 4;
@@ -251,10 +259,74 @@ function genMap(type) {
 
                 if (DEBUG) { console.log("Canvas updated with web-img!"); }
                 show(ctx); // Draw map.
-            } // "http://cors.io/?" +
-            g_tmpImg.src = document.getElementById("link_input").value;  // Gets web address of image.  // TODO: make sure image exists first. case not: give warning.
+        	}
 
-            alert(g_tmpImg.src);
+            // TODO: make sure image exists first. case if not: give warning.
+            // Also TODO: if this proxy breaks or dies, look for another one.
+            var url = "https://cors-anywhere.herokuapp.com/" + document.getElementById("link_input").value
+            g_tmpImg.src = url;
+            console.log("done url");
+
+            // Get the HTML
+        	//xhr.open( 'GET', url );
+        	//xhr.responseType = 'document';
+        	//xhr.send();
+            */
+
+            // TODO: make sure image exists first. case if not: give warning.
+            // Also TODO: if this proxy breaks or dies, look for another one.
+            var url = "https://cors-anywhere.herokuapp.com/" + document.getElementById("link_input").value
+            g_tmpImg.src = url;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('get', g_tmpImg.src);
+
+            xhr.responseType = 'blob';
+            xhr.onload = function() {
+                var fr = new FileReader();
+                fr.onload = function() { g_tmpImg.src = this.result; loadImg(); };
+                fr.readAsDataURL(xhr.response); // async call
+            };
+
+            loadImg = function() {
+                // I have to go through all this hassle just to get the image data.
+                ctx.canvas.width = document.getElementById("width_slider").value = g_tmpImg.width;
+                ctx.canvas.height = document.getElementById("height_slider").value = g_tmpImg.height;
+                updateSliders();
+
+                ctx.drawImage(g_tmpImg, 0, 0);  // Draw img to canvas.
+
+                setTimeout(drawImg, 100);  // wait 0.1s for img to load?
+            }
+
+            drawImg = function () {
+                var tmpImageData;
+                try {
+                    tmpImageData = ctx.getImageData(0, 0, g_tmpImg.width, g_tmpImg.height);
+                } catch(e) {
+                    //case: security error, img on diff domain.
+                    console.log("not very good at all -> // security error, img on diff domain //");
+                    console.log(e);
+                }
+
+                var step = 4;
+                for (let x = 0; x < g_tmpImg.width*step; x+=step) {
+                    map[x/step] = new Array(g_tmpImg.height);
+                    for (let y = 0; y < map[x/step].length*step; y+=step) {
+                        //console.log( tmpImageData.data[g_tmpImg.width*y+x],tmpImageData.data[g_tmpImg.width*y+x+1],tmpImageData.data[g_tmpImg.width*y+x+2] );
+                        map[x/step][y/step] = rgbToHue(
+                            tmpImageData.data[g_tmpImg.width*x+y],
+                            tmpImageData.data[g_tmpImg.width*x+y+1],
+                            tmpImageData.data[g_tmpImg.width*x+y+2]);
+                    }
+                }
+
+                if (DEBUG) { console.log("Canvas updated with web-img!"); }
+                show(ctx); // Draw map.
+            }
+
+            xhr.send();
+
             break;
     }
     if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
