@@ -16,7 +16,7 @@ function show(context) {
         for (let x = map.length; x-- > 0;) {
             for (let y = map[x].length; y-- > 0;) {
                 // This operation converts the scaled colour number into a readable one (sometimes performs rasterization.)
-                let colour = hueRGB[Math.floor((map[x][y] / detail) * 360)];
+                let colour = hueRGB[Math.round((map[x][y] / detail) * 360)]; // if there are 360 possible values (0-359) for 1 as a case it must be multiplied by 359.
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour.g;
@@ -56,6 +56,7 @@ function smooth(context) {
         }
     }
     if (DEBUG) { console.log(`Calculation time: ${performance.now() - start}ms`); }
+
     //Set map to the copy & redraw
     map = tMap;
     show(context);
@@ -220,10 +221,7 @@ function genMap(type) {
             }
             break;
 
-        case "web-img":
-            // test-img: https://www.gravatar.com/avatar/fdeba2d2385f519fc86bbd4221a2cc53?s=32&d=identicon&r=PG&f=1
-            // or: http://www.sd43.bc.ca/school/heritagewoods/Style%20Library/Images/LogoHeader.png
-
+        case "web-img":  /// Sorry in advace, I don't know the proper way to format callbacks so here you go. ///
             g_tmpImg = new Image();
 
             // Feature detection
@@ -236,13 +234,14 @@ function genMap(type) {
 
             var xhr = new XMLHttpRequest();
             xhr.open('get', g_tmpImg.src);
+            //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');  //TODO: do i need this?
 
             xhr.responseType = 'blob';
             xhr.onload = function() {
                 var fr = new FileReader();
                 fr.onload = function() {
                     g_tmpImg.src = this.result;  // This gets the data from the loaded image and sets it to the image variable.
-                    setTimeout(loadImg, 100);  // wait 0.1s for img to load.  //TODO: does this fix the 0s problem?
+                    setTimeout(loadImg, 50);  // wait 0.05s for img to load.
                 };
                 fr.readAsDataURL(xhr.response); // async call
             };
@@ -265,12 +264,11 @@ function genMap(type) {
                 var step = 4;
                 for (let x = 0; x<g_tmpImg.width*step; x+=step) {
                     map[x/step] = new Array(g_tmpImg.height);
-                    for (let y = 0; y<map[x/step].length*step; y+=step) {
-                        //console.log( tmpImageData.data[g_tmpImg.width*x+y],tmpImageData.data[g_tmpImg.width*x+y+1],tmpImageData.data[g_tmpImg.width*x+y+2] );
-                        map[x/step][y/step] = rgbToHue(
-                            tmpImageData.data[g_tmpImg.width*x+y],
-                            tmpImageData.data[g_tmpImg.width*x+y+1],
-                            tmpImageData.data[g_tmpImg.width*x+y+2])*detail;
+                    for (let y = 0; y<g_tmpImg.height*step; y+=step) {
+                        map[x/step][y/step] = Math.floor(rgbToHue(
+                            tmpImageData.data[g_tmpImg.width*y+x],
+                            tmpImageData.data[g_tmpImg.width*y+x+1],
+                            tmpImageData.data[g_tmpImg.width*y+x+2])*detail);
                     }
                 }
 
