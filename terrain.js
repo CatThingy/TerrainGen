@@ -15,7 +15,8 @@ function show(context) {
     if (document.getElementById("mode_hue").checked) {
         for (let x = map.length; x-- > 0;) {
             for (let y = map[x].length; y-- > 0;) {
-                let colour = hueRGB[Math.round((map[x][y] / detail) * 360)];
+                // This operation converts the scaled colour number into a readable one (sometimes performs rasterization.)
+                let colour = hueRGB[Math.floor((map[x][y] / detail) * 360)];
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour.g;
@@ -213,65 +214,20 @@ function genMap(type) {
                 map[x] = new Array(ctx.canvas.height);
                 for (let y = map[x].length; y-- > 0;) {
                     // This assigns an hsv value based on simplex noise.
+                    // This operation produces a *detail scaled* colour number.
                     map[x][y] = Math.floor((simplex.noise2D(x * g_kSimplex, y * g_kSimplex) + 1) / 2 * detail);
                 }
             }
             break;
 
         case "web-img":
-            //https://www.gravatar.com/avatar/fdeba2d2385f519fc86bbd4221a2cc53?s=32&d=identicon&r=PG&f=1
+            // test-img: https://www.gravatar.com/avatar/fdeba2d2385f519fc86bbd4221a2cc53?s=32&d=identicon&r=PG&f=1
+            // or: http://www.sd43.bc.ca/school/heritagewoods/Style%20Library/Images/LogoHeader.png
 
             g_tmpImg = new Image();
-            /*
+
             // Feature detection
-            //if ( !window.XMLHttpRequest ) { alert("Not good... -> you're using a shitty browser, aren't you?"); }
-        	//var xhr = new XMLHttpRequest();
-
-            // When image is loaded the map matrix will be updated. (this function gets called)
-        	//// When html is loaded the image data will be retieved (base64) and the map matrix will be updated. (this function gets called)
-        	//xhr.onload = function() {
-            g_tmpImg.onload = function() {
-                console.log("strt");
-
-                // I have to go through all this hassle just to get the image data.
-                ctx.canvas.width = document.getElementById("width_slider").value = g_tmpImg.width;
-                ctx.canvas.height = document.getElementById("height_slider").value = g_tmpImg.height;
-                var tmpImageData;
-                try {
-                    ctx.drawImage(g_tmpImg, 0, 0);
-                    tmpImageData = ctx.getImageData(0, 0, g_tmpImg.width, g_tmpImg.height);
-                } catch(e) {
-                    //security error, img on diff domain
-                    console.log("not very good at all -> // security error, img on diff domain //");
-                    console.log(e);
-                }
-
-                var step = 4;
-                for (let x = g_tmpImg.width; x > 0; x-=step) {
-                    map[x] = new Array(g_tmpImg.height);
-                    for (let y = map[x].length; y > 0; y-=step) {
-                        map[x/step][y/step] = RGBtoHue(
-                            tmpImageData.data[g_tmpImg.width*y+x],
-                            tmpImageData.data[g_tmpImg.width*y+x+1],
-                            tmpImageData.data[g_tmpImg.width*y+x+2]);
-                    }
-                }
-
-                if (DEBUG) { console.log("Canvas updated with web-img!"); }
-                show(ctx); // Draw map.
-        	}
-
-            // TODO: make sure image exists first. case if not: give warning.
-            // Also TODO: if this proxy breaks or dies, look for another one.
-            var url = "https://cors-anywhere.herokuapp.com/" + document.getElementById("link_input").value
-            g_tmpImg.src = url;
-            console.log("done url");
-
-            // Get the HTML
-        	//xhr.open( 'GET', url );
-        	//xhr.responseType = 'document';
-        	//xhr.send();
-            */
+            if ( !window.XMLHttpRequest ) { alert("Not good... -> you're using a shitty browser, aren't you?"); }
 
             // TODO: make sure image exists first. case if not: give warning.
             // Also TODO: if this proxy breaks or dies, look for another one.
@@ -284,40 +240,37 @@ function genMap(type) {
             xhr.responseType = 'blob';
             xhr.onload = function() {
                 var fr = new FileReader();
-                fr.onload = function() { g_tmpImg.src = this.result; loadImg(); };
+                fr.onload = function() {
+                    g_tmpImg.src = this.result;  // This gets the data from the loaded image and sets it to the image variable.
+                    setTimeout(loadImg, 100);  // wait 0.1s for img to load.  //TODO: does this fix the 0s problem?
+                };
                 fr.readAsDataURL(xhr.response); // async call
             };
 
             loadImg = function() {
-                // I have to go through all this hassle just to get the image data.
                 ctx.canvas.width = document.getElementById("width_slider").value = g_tmpImg.width;
                 ctx.canvas.height = document.getElementById("height_slider").value = g_tmpImg.height;
                 updateSliders();
 
+                // I have to go draw the image to canvas first, just to get the image's pixel data.
                 ctx.drawImage(g_tmpImg, 0, 0);  // Draw img to canvas.
 
-                setTimeout(drawImg, 100);  // wait 0.1s for img to load?
-            }
-
-            drawImg = function () {
                 var tmpImageData;
                 try {
-                    tmpImageData = ctx.getImageData(0, 0, g_tmpImg.width, g_tmpImg.height);
-                } catch(e) {
-                    //case: security error, img on diff domain.
-                    console.log("not very good at all -> // security error, img on diff domain //");
+                    tmpImageData = ctx.getImageData(0, 0, g_tmpImg.width, g_tmpImg.height);  // get img data from canvas.
+                } catch(e) {  //case: security error, img on diff domain.
                     console.log(e);
                 }
 
                 var step = 4;
-                for (let x = 0; x < g_tmpImg.width*step; x+=step) {
+                for (let x = 0; x<g_tmpImg.width*step; x+=step) {
                     map[x/step] = new Array(g_tmpImg.height);
-                    for (let y = 0; y < map[x/step].length*step; y+=step) {
-                        //console.log( tmpImageData.data[g_tmpImg.width*y+x],tmpImageData.data[g_tmpImg.width*y+x+1],tmpImageData.data[g_tmpImg.width*y+x+2] );
+                    for (let y = 0; y<map[x/step].length*step; y+=step) {
+                        //console.log( tmpImageData.data[g_tmpImg.width*x+y],tmpImageData.data[g_tmpImg.width*x+y+1],tmpImageData.data[g_tmpImg.width*x+y+2] );
                         map[x/step][y/step] = rgbToHue(
                             tmpImageData.data[g_tmpImg.width*x+y],
                             tmpImageData.data[g_tmpImg.width*x+y+1],
-                            tmpImageData.data[g_tmpImg.width*x+y+2]);
+                            tmpImageData.data[g_tmpImg.width*x+y+2])*detail;
                     }
                 }
 
@@ -325,8 +278,7 @@ function genMap(type) {
                 show(ctx); // Draw map.
             }
 
-            xhr.send();
-
+            xhr.send();  // Actaully request the image and wait for callbacks to be triggered.
             break;
     }
     if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
@@ -334,7 +286,7 @@ function genMap(type) {
     switch (type) {
         case "random-noise":
         case "simplex-noise":
-            show(ctx); // Update map.
+            show(ctx);  // Update map.
             return;
         case "web-img":
             // Map gets updated in load function.

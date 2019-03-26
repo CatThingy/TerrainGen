@@ -23,5 +23,5 @@ function rgbToHue(r, g, b) {
     h /= 6;
   }
 
-  return h*360;
+  return h;
 }
