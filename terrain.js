@@ -1,6 +1,5 @@
 'use-strict';
 
-
 let DEBUG = false;
 
 let g_kSimplex = 0.001;
@@ -12,8 +11,8 @@ function show(context) {
     let start = performance.now();
     let imgData = context.createImageData(context.canvas.width, context.canvas.height);
     if (document.getElementById("mode_hue").checked) {
-        for (let x = map.length; x --> 0;) {
-            for (let y = map[x].length; y --> 0;) {
+        for (let x = map.length; x-- > 0;) {
+            for (let y = map[x].length; y-- > 0;) {
                 // This operation converts the scaled colour number into a readable one (sometimes performs rasterization.)
                 let colour = hueRGB[Math.round((map[x][y] / detail) * 359)]; // if there are 360 possible values (0-359) for 1 as a case it must be multiplied by 359.
                 //Set each channel of the pixel to the correct value
@@ -25,8 +24,8 @@ function show(context) {
         }
     }
     else {
-        for (let x = map.length; x --> 0;) {
-            for (let y = map[x].length; y --> 0;) {
+        for (let x = map.length; x-- > 0;) {
+            for (let y = map[x].length; y-- > 0;) {
                 let colour = (1 - (map[x][y] / (detail - 1))) * 255;
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour;
@@ -48,8 +47,8 @@ function smooth(context) {
     let tMap = map.map(arr => arr.slice());
     let r = parseInt(document.getElementById("neighbour_range").value);
     let start = performance.now();
-    for (let x = map.length; x --> 0;) {
-        for (let y = map[x].length; y --> 0;) {
+    for (let x = map.length; x-- > 0;) {
+        for (let y = map[x].length; y-- > 0;) {
             // Sets pixel to average of neighbour pixels
             tMap[x][y] = getNeigbourAverage(map, x, y, r, w);
         }
@@ -189,7 +188,7 @@ function init() {
 
 // type is a string that represents what map to generate
 function genMap(type) {
-    let start = performance.now();
+    if (DEBUG) { var start = performance.now(); }
     setMapSize();
 
     map = []; // Create new 2D array populated with 'random' numbers.
@@ -197,9 +196,9 @@ function genMap(type) {
     // Fill map.
     switch (type) {
         case "random-noise":
-            for (let x = ctx.canvas.width; x --> 0;) {
+            for (let x = ctx.canvas.width; x-- > 0;) {
                 map[x] = new Array(ctx.canvas.height);
-                for (let y = map[x].length; y --> 0;) {
+                for (let y = map[x].length; y-- > 0;) {
                     map[x][y] = Math.floor(Math.random() * detail);
                 }
             }
@@ -210,9 +209,9 @@ function genMap(type) {
                 simplex = new SimplexNoise();
             }
 
-            for (let x = ctx.canvas.width; x --> 0;) {
+            for (let x = ctx.canvas.width; x-- > 0;) {
                 map[x] = new Array(ctx.canvas.height);
-                for (let y = map[x].length; y --> 0;) {
+                for (let y = map[x].length; y-- > 0;) {
                     // This assigns an hsv value based on simplex noise.
                     // This operation produces a *detail scaled* colour number.
                     map[x][y] = Math.floor((simplex.noise2D(x * g_kSimplex, y * g_kSimplex) + 1) / 2 * detail);
@@ -228,31 +227,30 @@ function genMap(type) {
             if (!window.XMLHttpRequest) { alert("Unfortunately, your browser doesn't support loading images from a URL."); return; }
 
             //Regex to see if the image url is valid - not replacement for testing if image exists
+            //Removed because it had false negatives
             // if (!link.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+\/.+\.(?:png|bmp|jpe?g|ico)/i)) { alert("Please make sure the image URL is valid."); return; }
-
             // TODO: make sure image exists first. case if not: give warning.
             // Also TODO: if this proxy breaks or dies, look for another one.
             let url = "https://cors-anywhere.herokuapp.com/" + link
-            tmpImg.src = url;
-
             let dataAxis = document.getElementById("axis_hue").checked ? "hue" : document.getElementById("axis_saturation").checked ? "saturation" : "lightness"
             let xhr = new XMLHttpRequest();
-            xhr.open('get', tmpImg.src);
+            xhr.open('get', url);
             //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');  //TODO: do i need this?
             //                                                               no
             xhr.responseType = 'blob';
             xhr.onload = function () {
                 let fr = new FileReader();
                 fr.onload = function () {
+                    if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
                     tmpImg.src = this.result;  // This gets the data from the loaded image and sets it to the image variable.
-                    loadImg(tmpImg, dataAxis);  //load image
+                    setTimeout(loadImg(tmpImg, dataAxis, DEBUG ? start : null), 0);  //load image after background refresh
                 };
                 fr.readAsDataURL(xhr.response); // async call
             };
             xhr.send();  // Actually request the image and wait for callbacks to be triggered.
             break;
     }
-    if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
+    if (DEBUG && type != "web-img") { console.log(`Generation time: ${performance.now() - start}ms`); }
 
     switch (type) {
         case "random-noise":
@@ -301,26 +299,24 @@ function main() {
     updateSliders();
 }
 
-function loadImg(img, axis) {
+function loadImg(img, axis, time_since_start) {
+    if (img.width <= 0) {alert("Please ensure the image URL is valid."); return; }
     //Prevent errors from a canvas that's too small
-    ctx.canvas.width = document.getElementById("width_slider").value = 3000;
-    ctx.canvas.height = document.getElementById("height_slider").value = 3000;
+    ctx.canvas.width = document.getElementById("width_slider").value = img.width;
+    ctx.canvas.height = document.getElementById("height_slider").value = img.height;
 
     // I have to go draw the image to canvas first, just to get the image's pixel data.
     // Fails on Firefox if resistFingerprinting is enabled
     ctx.drawImage(img, 0, 0);  // Draw img to canvas.
-    alert(img.width, img.height);
     let tmpImageData;
     try {
         tmpImageData = ctx.getImageData(0, 0, img.width, img.height);  // get img data from canvas.
     } catch (e) {  //case: security error, img on diff domain.
-            console.log(e);
+        console.log(e);
     }
 
     let step = 4;
-    console.log(axis);
-    ctx.canvas.width = document.getElementById("width_slider").value = img.width;
-    ctx.canvas.height = document.getElementById("height_slider").value = img.height;
+    if (DEBUG) { console.log(axis); }
     updateSliders();
     switch (axis) {
         //Use hue as data
@@ -362,7 +358,7 @@ function loadImg(img, axis) {
             }
             break;
     }
-    if (DEBUG) { console.log("Canvas updated with web-img!"); }
+    if (DEBUG) { console.log(`Canvas updated with web-img in ${performance.now() - time_since_start} ms!`); }
     show(ctx); // Draw map.
 }
 
