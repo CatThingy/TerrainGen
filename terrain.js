@@ -232,7 +232,7 @@ function genMap(type) {
             // TODO: make sure image exists first. case if not: give warning.
             // Also TODO: if this proxy breaks or dies, look for another one.
             let url = "https://cors-anywhere.herokuapp.com/" + link
-            let dataAxis = document.getElementById("axis_hue").checked ? "hue" : document.getElementById("axis_saturation").checked ? "saturation" : "lightness"
+            let dataAxis = document.getElementById("axis_hue").checked ? "Hue" : document.getElementById("axis_saturation").checked ? "Saturation" : "Lightness"
             let xhr = new XMLHttpRequest();
             xhr.open('get', url);
             //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');  //TODO: do i need this?
@@ -243,7 +243,7 @@ function genMap(type) {
                 fr.onload = function () {
                     if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
                     tmpImg.src = this.result;  // This gets the data from the loaded image and sets it to the image variable.
-                    setTimeout(loadImg(tmpImg, dataAxis, DEBUG ? start : null), 0);  //load image after background refresh
+                    setTimeout(loadImg(tmpImg, dataAxis, DEBUG ? start : null), 1);  //load image after background refresh
                 };
                 fr.readAsDataURL(xhr.response); // async call
             };
@@ -300,7 +300,7 @@ function main() {
 }
 
 function loadImg(img, axis, time_since_start) {
-    if (img.width <= 0) {alert("Please ensure the image URL is valid."); return; }
+    if (img.width <= 0) { alert("Please ensure the image URL is valid."); return; }
     //Prevent errors from a canvas that's too small
     ctx.canvas.width = document.getElementById("width_slider").value = img.width;
     ctx.canvas.height = document.getElementById("height_slider").value = img.height;
@@ -318,45 +318,15 @@ function loadImg(img, axis, time_since_start) {
     let step = 4;
     if (DEBUG) { console.log(axis); }
     updateSliders();
-    switch (axis) {
-        //Use hue as data
-        case "hue":
-            for (let x = 0; x < img.width * step; x += step) {
-                map[x / step] = new Array(img.height);
-                for (let y = 0; y < img.height * step; y += step) {
-                    map[x / step][y / step] = Math.floor(rgbToHue(
-                        tmpImageData.data[img.width * y + x],
-                        tmpImageData.data[img.width * y + x + 1],
-                        tmpImageData.data[img.width * y + x + 2]) * detail);
-                }
-            }
-            break;
-
-        //Use saturation as data
-        case "saturation":
-            for (let x = 0; x < img.width * step; x += step) {
-                map[x / step] = new Array(img.height);
-                for (let y = 0; y < img.height * step; y += step) {
-                    map[x / step][y / step] = Math.floor(rgbToSaturation(
-                        tmpImageData.data[img.width * y + x],
-                        tmpImageData.data[img.width * y + x + 1],
-                        tmpImageData.data[img.width * y + x + 2]) * detail);
-                }
-            }
-            break;
-
-        //Use lightness as data
-        case "lightness":
-            for (let x = 0; x < img.width * step; x += step) {
-                map[x / step] = new Array(img.height);
-                for (let y = 0; y < img.height * step; y += step) {
-                    map[x / step][y / step] = Math.floor(rgbToLightness(
-                        tmpImageData.data[img.width * y + x],
-                        tmpImageData.data[img.width * y + x + 1],
-                        tmpImageData.data[img.width * y + x + 2]) * detail);
-                }
-            }
-            break;
+    //Use Hue/Saturation/Lightness as data
+    for (let x = 0; x < img.width * step; x += step) {
+        map[x / step] = new Array(img.height);
+        for (let y = 0; y < img.height * step; y += step) {
+            map[x / step][y / step] = Math.floor(window[`rgbTo${axis}`](
+                tmpImageData.data[img.width * y + x],
+                tmpImageData.data[img.width * y + x + 1],
+                tmpImageData.data[img.width * y + x + 2]) * detail);
+        }
     }
     if (DEBUG) { console.log(`Canvas updated with web-img in ${performance.now() - time_since_start} ms!`); }
     show(ctx); // Draw map.
