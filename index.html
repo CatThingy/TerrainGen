@@ -9,7 +9,8 @@
     <title>Terrain Gen</title>
 
     <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="stylesheet" type="text/css" href="semantic.min.css">  <!--- This is pretty cool & free -->
+    <link rel="stylesheet" type="text/css" href="semantic.min.css">
+    <!--- This is pretty cool & free -->
     <script src="ui.js"></script>
 
     <script src="HueToRGB.js"></script>
@@ -21,32 +22,38 @@
     <div id="header">
         <table class="table-std">
             <tr>
-                <th>Noise Gen Buttons</th>
+                <th>Map Controls</th>
                 <th>Variables</th>
                 <th>Options</th>
-                <th>Misc</th>
+                <th>Mode-specific Options</th>
             </tr>
             <tr>
                 <td>
-                    <button class="ui button" onclick="genMap('random-noise')">Generate <red>'random-noise'</red> map</button> <br>
-                    <button class="ui button" onclick="genMap('simplex-noise')">Generate <orange>'simplex-noise'</orange> map</button> <br>
-                    <button class="ui button" onclick="genMap('web-img')">Generate map from <purple>'web-image'</purple></button> <br>
-                    <button class="ui button" onclick="smooth(ctx)"><green>Smooth map</green></button> <br>
+                    <button class="ui button" onclick="genMap('random-noise')">Generate <red>'random-noise'</red>
+                        map</button> <br>
+                    <button class="ui button" onclick="genMap('simplex-noise')">Generate <orange>'simplex-noise'
+                        </orange> map</button> <br>
+                    <button class="ui button" onclick="genMap('web-img')">Generate map from <purple>'web-image'</purple>
+                    </button> <br><br>
+
+                    <button class="ui button" onclick="smooth(ctx)">
+                        <green>Smooth map</green>
+                    </button> <br>
                 </td>
                 <td>
-                    <p id="kSimplex_display" class="var-title">Simplex Konstant:</p>
-                    <input type="range" id="kSimplex_slider" min="0.0001" max="8" step="0.000001" oninput="updateSliders()"> <br>
 
                     <p id="width_display" class="var-title">Width:</p>
                     <input type="range" id="width_slider" min="1" max="3000" oninput="updateSliders()"> <br>
 
                     <p id="height_display" class="var-title">Height:</p>
                     <input type="range" id="height_slider" min="1" max="3000" oninput="updateSliders()"> <br>
+                    <div class="ui form">
+                        <label for="detail">Use </label>
+                        <input type="number" min="2" max="360" value="360" id="detail"
+                            style="padding:0.3em;height:0.8em;width:3em;">
+                        <label for="detail">different values </label>
+                    </div><br>
 
-                    <div class="ui label">Image Address:</div>
-                    <div class="ui input">
-                        <input id="link_input" type="text" name="web_adress" placeholder="www.dopeopleusewww.com/img.jpg" style="width:16em">
-                    </div>
                 </td>
                 <td>
                     <h4 class="op-title"> -------- Colour Options -------- </h4>
@@ -61,20 +68,22 @@
                             <input type="radio" name="colormode" id="mode_gray">
                             <label for="mode_gray">Lightness changes with value</label>
                         </div>
+
                     </div>
+
+                    <br>
+                    <button class="ui button" onclick="show(ctx)">
+                        <blue>Redraw canvas</blue>
+                    </button>
                     <br>
 
-                    <div class="ui form">
-                        <label for="detail">Have </label>
-                        <input type="number" min="2" max="360" value="360" id="detail" style="padding:0.3em;height:0.8em;width:3em;">
-                        <label for="detail">different values </label>
-                    </div>
 
                     <h4 class="op-title"> -------- World Options -------- </h4>
 
                     <div class="ui form">
                         <label for="neighbour_range">Search for neighbours within </label>
-                        <input type="number" min="1" max="9" value="1" id="neighbour_range" style="padding:0.3em;height:0.8em;width:2em;">
+                        <input type="number" min="1" max="9" value="1" id="neighbour_range"
+                            style="padding:0.3em;height:0.8em;width:2em;">
                         <label for="neighbour_range"> square(s) when smoothing</label>
                     </div>
                     <br>
@@ -82,33 +91,60 @@
                     <div class="op-box ui form">
                         <div class="ui slider checkbox">
                             <input type="radio" name="edge_behaviour" id="flat" checked="true">
-                            <label for="flat">Treat the world as flat when smoothing(no wrap around)</label>
+                            <label for="flat">Treat the world as flat when smoothing</label>
                         </div>
                         <br>
-                        <div class="ui slider  checkbox">
+                        <div class="ui slider checkbox">
                             <input type="radio" name="edge_behaviour" id="sphere">
-                            <label for="sphere">Treat the world as spherical when smoothing(wraps E-W, NW-N, SW-S)</label>
+                            <label for="sphere">Treat the world as spherical when smoothing</label>
                         </div>
                         <br>
-                        <div class="ui slider  checkbox">
+                        <div class="ui slider checkbox">
                             <input type="radio" name="edge_behaviour" id="torus">
-                            <label for="torus">Treat the world as a torus when smoothing(wraps N-S, E-W)</label>
+                            <label for="torus">Treat the world as a torus when smoothing</label>
                         </div>
                     </div>
                 </td>
                 <td>
+                    <h4 class="op-title"> -------- Simplex Options --------</h4>
                     <div class="ui toggle checkbox">
                         <input type="checkbox" name="new_simplex_seed" id="reseed_simplex" checked="true">
-                        <label for="reseed_simplex">Generate a different simplex noise map each time</label>
+                        <label for="reseed_simplex">Re-randomize the noise map each time</label>
                     </div>
                     <br> <br>
-                    <button class="ui button" onclick="show(ctx)"><blue>Redraw canvas</blue></button>
+                    <p id="kSimplex_display" class="var-title">Noise Size Modifier:</p>
+                    <input type="range" id="kSimplex_slider" min="0.0001" max="8" step="0.000001"
+                        oninput="updateSliders()"> <br>
+                    <h4 class="op-title"> -------- Image Options --------</h4>
+                    <div class="ui label">Image URL:</div>
+                    <div class="ui input">
+                        <input id="link_input" type="text" name="web_address" placeholder="www.example.com/image.jpg"
+                            style="width:16em">
+
+                    </div>
+                    <br><br>
+                    <div class="op-box ui form">
+                        <div class="ui slider checkbox">
+                            <input type="radio" name="data_axis" id="axis_hue" checked="true">
+                            <label for="hue">Use the image's hue as the data</label>
+                        </div>
+                        <br>
+                        <div class="ui slider checkbox">
+                            <input type="radio" name="data_axis" id="axis_saturation" checked="true">
+                            <label for="hue">Use the image's saturation as the data</label>
+                        </div>
+                        <br>
+                        <div class="ui slider checkbox">
+                            <input type="radio" name="data_axis" id="axis_lightness" checked="true">
+                            <label for="hue">Use the image's lightness as the data</label>
+                        </div>
+                    </div>
                 </td>
             </tr>
         </table>
     </div>
 
-    <div id="doc"> </div>
+    <div id="doc" style = "overflow-x:auto; margin:0"> </div>
 
 </body>
 

@@ -1,8 +1,7 @@
 'use-strict';
 
-// The lookup table for HueToRGB is hueRGB.
 
-let DEBUG = true;
+let DEBUG = false;
 
 let g_kSimplex = 0.001;
 
@@ -16,7 +15,7 @@ function show(context) {
         for (let x = map.length; x --> 0;) {
             for (let y = map[x].length; y --> 0;) {
                 // This operation converts the scaled colour number into a readable one (sometimes performs rasterization.)
-                let colour = hueRGB[Math.round((map[x][y] / detail) * 360)]; // if there are 360 possible values (0-359) for 1 as a case it must be multiplied by 359.
+                let colour = hueRGB[Math.round((map[x][y] / detail) * 359)]; // if there are 360 possible values (0-359) for 1 as a case it must be multiplied by 359.
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour.g;
@@ -185,8 +184,8 @@ function init() {
     genMap('random-noise'); // Generate the map.
 }
 
-let g_tmpImg = new Image();
-g_tmpImg.crossOrigin = "Anonymous";  // VERY IMPORTANT
+// let g_img = new Image();
+// g_img.crossOrigin = "Anonymous";  // VERY IMPORTANT
 
 // type is a string that represents what map to generate
 function genMap(type) {
@@ -221,64 +220,35 @@ function genMap(type) {
             }
             break;
         case "web-img":  /// Sorry in advace, I don't know the proper way to format callbacks so here you go. ///
-            g_tmpImg = new Image();
+            //Image loading
+            let tmpImg = new Image();
+            tmpImg.crossOrigin = "Anonymous";
             let link = document.getElementById("link_input").value;
             // Feature detection
             if (!window.XMLHttpRequest) { alert("Unfortunately, your browser doesn't support loading images from a URL."); return; }
 
             //Regex to see if the image url is valid - not replacement for testing if image exists
-            if (!link.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+\/.+\.(?:png|bmp|jpe?g|ico)/i)) { alert("Please make sure the image URL is valid."); return; }
+            // if (!link.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+\/.+\.(?:png|bmp|jpe?g|ico)/i)) { alert("Please make sure the image URL is valid."); return; }
 
             // TODO: make sure image exists first. case if not: give warning.
             // Also TODO: if this proxy breaks or dies, look for another one.
             let url = "https://cors-anywhere.herokuapp.com/" + link
-            g_tmpImg.src = url;
+            tmpImg.src = url;
 
+            let dataAxis = document.getElementById("axis_hue").checked ? "hue" : document.getElementById("axis_saturation").checked ? "saturation" : "lightness"
             let xhr = new XMLHttpRequest();
-            xhr.open('get', g_tmpImg.src);
+            xhr.open('get', tmpImg.src);
             //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');  //TODO: do i need this?
-
+            //                                                               no
             xhr.responseType = 'blob';
             xhr.onload = function () {
                 let fr = new FileReader();
                 fr.onload = function () {
-                    g_tmpImg.src = this.result;  // This gets the data from the loaded image and sets it to the image variable.
-                    setTimeout(loadImg, 50);  // wait 0.05s for img to load.
+                    tmpImg.src = this.result;  // This gets the data from the loaded image and sets it to the image variable.
+                    loadImg(tmpImg, dataAxis);  //load image
                 };
                 fr.readAsDataURL(xhr.response); // async call
             };
-
-            loadImg = function () {
-                ctx.canvas.width = document.getElementById("width_slider").value = g_tmpImg.width;
-                ctx.canvas.height = document.getElementById("height_slider").value = g_tmpImg.height;
-                updateSliders();
-
-                // I have to go draw the image to canvas first, just to get the image's pixel data.
-                // Fails on Firefox if resistFingerprinting is enabled
-                ctx.drawImage(g_tmpImg, 0, 0);  // Draw img to canvas.
-
-                let tmpImageData;
-                try {
-                    tmpImageData = ctx.getImageData(0, 0, g_tmpImg.width, g_tmpImg.height);  // get img data from canvas.
-                } catch (e) {  //case: security error, img on diff domain.
-                    console.log(e);
-                }
-
-                let step = 4;
-                for (let x = 0; x < g_tmpImg.width * step; x += step) {
-                    map[x / step] = new Array(g_tmpImg.height);
-                    for (let y = 0; y < g_tmpImg.height * step; y += step) {
-                        map[x / step][y / step] = Math.floor(rgbToHue(
-                            tmpImageData.data[g_tmpImg.width * y + x],
-                            tmpImageData.data[g_tmpImg.width * y + x + 1],
-                            tmpImageData.data[g_tmpImg.width * y + x + 2]) * detail);
-                    }
-                }
-
-                if (DEBUG) { console.log("Canvas updated with web-img!"); }
-                show(ctx); // Draw map.
-            }
-
             xhr.send();  // Actually request the image and wait for callbacks to be triggered.
             break;
     }
@@ -320,7 +290,7 @@ function logScale(val) {
 function main() {
     // Add canvas to the document
     document.getElementById("doc").appendChild(canvas);
-
+    ctx.canvas.style = "margin:0"
     // Set slider values to canvas size
     document.getElementById("height_slider").value = ctx.canvas.height;
     document.getElementById("width_slider").value = ctx.canvas.width;
@@ -329,6 +299,71 @@ function main() {
 
     init();
     updateSliders();
+}
+
+function loadImg(img, axis) {
+    //Prevent errors from a canvas that's too small
+    ctx.canvas.width = document.getElementById("width_slider").value = 3000;
+    ctx.canvas.height = document.getElementById("height_slider").value = 3000;
+
+    // I have to go draw the image to canvas first, just to get the image's pixel data.
+    // Fails on Firefox if resistFingerprinting is enabled
+    ctx.drawImage(img, 0, 0);  // Draw img to canvas.
+    alert(img.width, img.height);
+    let tmpImageData;
+    try {
+        tmpImageData = ctx.getImageData(0, 0, img.width, img.height);  // get img data from canvas.
+    } catch (e) {  //case: security error, img on diff domain.
+            console.log(e);
+    }
+
+    let step = 4;
+    console.log(axis);
+    ctx.canvas.width = document.getElementById("width_slider").value = img.width;
+    ctx.canvas.height = document.getElementById("height_slider").value = img.height;
+    updateSliders();
+    switch (axis) {
+        //Use hue as data
+        case "hue":
+            for (let x = 0; x < img.width * step; x += step) {
+                map[x / step] = new Array(img.height);
+                for (let y = 0; y < img.height * step; y += step) {
+                    map[x / step][y / step] = Math.floor(rgbToHue(
+                        tmpImageData.data[img.width * y + x],
+                        tmpImageData.data[img.width * y + x + 1],
+                        tmpImageData.data[img.width * y + x + 2]) * detail);
+                }
+            }
+            break;
+
+        //Use saturation as data
+        case "saturation":
+            for (let x = 0; x < img.width * step; x += step) {
+                map[x / step] = new Array(img.height);
+                for (let y = 0; y < img.height * step; y += step) {
+                    map[x / step][y / step] = Math.floor(rgbToSaturation(
+                        tmpImageData.data[img.width * y + x],
+                        tmpImageData.data[img.width * y + x + 1],
+                        tmpImageData.data[img.width * y + x + 2]) * detail);
+                }
+            }
+            break;
+
+        //Use lightness as data
+        case "lightness":
+            for (let x = 0; x < img.width * step; x += step) {
+                map[x / step] = new Array(img.height);
+                for (let y = 0; y < img.height * step; y += step) {
+                    map[x / step][y / step] = Math.floor(rgbToLightness(
+                        tmpImageData.data[img.width * y + x],
+                        tmpImageData.data[img.width * y + x + 1],
+                        tmpImageData.data[img.width * y + x + 2]) * detail);
+                }
+            }
+            break;
+    }
+    if (DEBUG) { console.log("Canvas updated with web-img!"); }
+    show(ctx); // Draw map.
 }
 
 window.onload = function () { main(); }
