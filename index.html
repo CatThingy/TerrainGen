@@ -34,10 +34,13 @@
                     <button class="ui button" onclick="genMap('simplex-noise')">Generate <orange>'simplex-noise'
                         </orange> map</button> <br>
                     <button class="ui button" onclick="genMap('web-img')">Generate map from <purple>'web-image'</purple>
-                    </button> <br><br>
+                    </button> <br>
+                    <button class="ui button" onclick="genMap('img-file')">Generate map from <green>'img-file'</green>
+                    </button>
+                    <br><br>
 
                     <button class="ui button" onclick="smooth(ctx)">
-                        <green>Smooth map</green>
+                        <blue>Smooth map</blue>
                     </button> <br>
                 </td>
                 <td>
@@ -120,7 +123,11 @@
                     <div class="ui input">
                         <input id="link_input" type="text" name="web_address" placeholder="www.example.com/image.jpg"
                             style="width:16em">
-
+                    </div>
+                    <br>
+                    <div class="ui label">Image File:</div>
+                    <div class="ui input">
+                        <input id="file_input" type="file" name="file" accept="image/*">
                     </div>
                     <br><br>
                     <div class="op-box ui form">
@@ -144,7 +151,7 @@
         </table>
     </div>
 
-    <div id="doc" style = "overflow-x:auto; margin:0"> </div>
+    <div id="doc" style="overflow-x:auto; margin:0"> </div>
 
 </body>
 

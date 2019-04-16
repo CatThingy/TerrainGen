@@ -14,7 +14,8 @@ function show(context) {
         for (let x = map.length; x-- > 0;) {
             for (let y = map[x].length; y-- > 0;) {
                 // This operation converts the scaled colour number into a readable one (sometimes performs rasterization.)
-                let colour = hueRGB[Math.round((map[x][y] / detail) * 359)]; // if there are 360 possible values (0-359) for 1 as a case it must be multiplied by 359.
+                let colour = hueRGB[Math.round((map[x][y] / detail) * 359)]; // if there are 360 possible values (0-359) for 
+                //                                                              1 as a case it must be multiplied by 359.
                 //Set each channel of the pixel to the correct value
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 0] = colour.r;
                 imgData.data[(y * (imgData.width * 4) + (x * 4)) + 1] = colour.g;
@@ -40,23 +41,23 @@ function show(context) {
 }
 
 function smooth(context) {
-    let w = document.getElementById("flat").checked ? 1 : document.getElementById("sphere").checked ? 2 : 3;
+    let worldType = document.getElementById("flat").checked ? 1 : document.getElementById("sphere").checked ? 2 : 3;
 
     // Create copy of map so that the smoothing alg isn't
     // affected by the order in which pixels are smoothed.
-    let tMap = map.map(arr => arr.slice());
-    let r = parseInt(document.getElementById("neighbour_range").value);
+    let mapCopy = map.map(arr => arr.slice());
+    let range = parseInt(document.getElementById("neighbour_range").value);
     let start = performance.now();
     for (let x = map.length; x-- > 0;) {
         for (let y = map[x].length; y-- > 0;) {
             // Sets pixel to average of neighbour pixels
-            tMap[x][y] = getNeigbourAverage(map, x, y, r, w);
+            mapCopy[x][y] = getNeigbourAverage(map, x, y, range, worldType);
         }
     }
     if (DEBUG) { console.log(`Calculation time: ${performance.now() - start}ms`); }
 
     //Set map to the copy & redraw
-    map = tMap;
+    map = mapCopy;
     show(context);
 
 }
@@ -176,8 +177,8 @@ function getNeigbourAverage(arr, x, y, r, worldMode) {
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext('2d');
 let detail = 360;
-ctx.canvas.width = window.innerWidth * 0.975;
-ctx.canvas.height = window.innerHeight * 0.975;
+ctx.canvas.width = window.innerWidth * 0.97;
+ctx.canvas.height = window.innerHeight;
 
 function init() {
     genMap('random-noise'); // Generate the map.
@@ -220,7 +221,7 @@ function genMap(type) {
             break;
         case "web-img":  /// Sorry in advace, I don't know the proper way to format callbacks so here you go. ///
             //Image loading
-            let tmpImg = new Image();
+            var tmpImg = new Image();
             tmpImg.crossOrigin = "Anonymous";
             let link = document.getElementById("link_input").value;
             // Feature detection
@@ -228,11 +229,15 @@ function genMap(type) {
 
             //Regex to see if the image url is valid - not replacement for testing if image exists
             //Removed because it had false negatives
-            // if (!link.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+\/.+\.(?:png|bmp|jpe?g|ico)/i)) { alert("Please make sure the image URL is valid."); return; }
+            /* if (!link.match(/^(?:https?:\/\/)?(?:[\w]+\.)(?:\.?[\w]{2,})+\/.+\.(?:png|bmp|jpe?g|ico)/i)) {
+                alert("Please make sure the image URL is valid.");
+                return;
+            }*/
+
             // TODO: make sure image exists first. case if not: give warning.
             // Also TODO: if this proxy breaks or dies, look for another one.
             let url = "https://cors-anywhere.herokuapp.com/" + link
-            let dataAxis = document.getElementById("axis_hue").checked ? "Hue" : document.getElementById("axis_saturation").checked ? "Saturation" : "Lightness"
+            var dataAxis = document.getElementById("axis_hue").checked ? "Hue" : document.getElementById("axis_saturation").checked ? "Saturation" : "Lightness"
             let xhr = new XMLHttpRequest();
             xhr.open('get', url);
             //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');  //TODO: do i need this?
@@ -243,11 +248,24 @@ function genMap(type) {
                 fr.onload = function () {
                     if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
                     tmpImg.src = this.result;  // This gets the data from the loaded image and sets it to the image variable.
-                    setTimeout(loadImg(tmpImg, dataAxis, DEBUG ? start : null), 1);  //load image after background refresh
+                    setTimeout(loadImg(tmpImg, dataAxis, DEBUG ? start : null), 100);  //load image after background refresh
                 };
                 fr.readAsDataURL(xhr.response); // async call
             };
             xhr.send();  // Actually request the image and wait for callbacks to be triggered.
+            break;
+        case "img-file":
+            var tmpImg = new Image();
+            tmpImg.crossOrigin = "Anonymous";
+            var dataAxis = document.getElementById("axis_hue").checked ? "Hue" : document.getElementById("axis_saturation").checked ? "Saturation" : "Lightness"
+            let files = document.getElementById("file_input").files;
+            let fr = new FileReader();
+            fr.onload = function () {
+                if (DEBUG) { console.log(`Generation time: ${performance.now() - start}ms`); }
+                tmpImg.src = this.result;
+                setTimeout(loadImg(tmpImg, dataAxis, DEBUG ? start : null), 100) ;
+            };
+            fr.readAsDataURL(files[0]);
             break;
     }
     if (DEBUG && type != "web-img") { console.log(`Generation time: ${performance.now() - start}ms`); }
@@ -288,7 +306,7 @@ function logScale(val) {
 function main() {
     // Add canvas to the document
     document.getElementById("doc").appendChild(canvas);
-    ctx.canvas.style = "margin:0"
+    ctx.canvas.style.marginLeft = '1%'
     // Set slider values to canvas size
     document.getElementById("height_slider").value = ctx.canvas.height;
     document.getElementById("width_slider").value = ctx.canvas.width;
@@ -300,7 +318,7 @@ function main() {
 }
 
 function loadImg(img, axis, time_since_start) {
-    if (img.width <= 0) { alert("Please ensure the image URL is valid."); return; }
+    if (img.width <= 0) { alert("Please ensure the image is valid, then try again."); return; }
     //Prevent errors from a canvas that's too small
     ctx.canvas.width = document.getElementById("width_slider").value = img.width;
     ctx.canvas.height = document.getElementById("height_slider").value = img.height;
@@ -318,7 +336,7 @@ function loadImg(img, axis, time_since_start) {
     let step = 4;
     if (DEBUG) { console.log(axis); }
     updateSliders();
-    //Use Hue/Saturation/Lightness as data
+    //Use hue/saturation/lightness as data
     for (let x = 0; x < img.width * step; x += step) {
         map[x / step] = new Array(img.height);
         for (let y = 0; y < img.height * step; y += step) {
